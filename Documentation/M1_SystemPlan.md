@@ -82,3 +82,20 @@ MoSCoW: **M**ust, **S**hould, **C**ould, **W**on't (this iteration)
  
 ### 3.6 Won't Have
 Multi-seller marketplace, live payment gateway, real-time stock websockets, product reviews/ratings, wishlist, coupon/discount engine, recommendation engine. These are  excluded because adding them would inflate the scope
+
+## 4. Non-Functional Requirements
+ 
+| Category | Requirement |
+|---|---|
+| **Performance** | Typical API responses should complete within ~300ms under normal development-test load |
+| **Security** | Passwords hashed with bcrypt; JWT signed with HS256 and a secret stored in environment variables; all admin routes enforce role-based authorization server-side |
+| **Availability** | Target 95%+ uptime during the grading/demo window |
+| **Scalability** | Stateless backend (JWT, no server-side session) allows horizontal scaling behind a load balancer if needed; not required to be load-tested at academic scale, but the design must not architecturally prevent it. |
+| **Maintainability** | Layered architecture (Controller/Service/Repository) with ESLint + consistent style enforced in CI; each module has a single responsibility. |
+| **Usability** | Core flows (Browse then Cart then Checkout) completable in <=5 clicks from homepage; form validation gives inline, specific error messages. |
+| **Accessibility** | Semantic HTML, keyboard-navigable forms, sufficient colour contrast |
+| **Compatibility** | Responsive design tested at 3 breakpoints (mobile <=480px, tablet <=768px, desktop >=1024px); latest two versions of Chrome, Firefox, Edge. |
+| **Reliability** | Checkout must be atomic, so either the full order (with items) is created and stock decremented, or nothing is (DB transaction). |
+| **Testability** | All business logic isolated in Service layer, unit-testable without HTTP or DB. |
+ 
+Unrealistic enterprise SLAs are avoided on purpose since they aren't achievable more meaningful on student-free infrastructure and would not be honestly demonstratable
