@@ -1,13 +1,13 @@
 # Milestone 1: System Plan
-### E-Commerce Web Application — Architectural & Engineering Foundation
+### E-Commerce Web Application
 
 ## 1. Executive Summary
  
-This document is the System Plan for a full-stack e-commerce web application built for our SEN371. It produces the blueprint for the architecture, technology stack, database design, API contract, security model, UI/UX strategy, testing strategy, version control workflow, and deployment plan that will govern Milestones 2–6.
+This document is the System Plan for a full-stack e-commerce web application built for our SEN371. It produces the blueprint for the architecture, technology stack, database design, API contract, security model, UI/UX strategy, testing strategy, version control workflow, and deployment plan that will govern Milestones 2 till 6.
  
 The recommended stack is **React (frontend) + Node.js/Express (backend) + PostgreSQL (database)**, structured around **MVC with a Service and Repository layer**, secured with **JWT-based authentication**, developed using **Agile/Scrum with Test-Driven Development**, and deployed via **GitHub Actions CI/CD** to **Vercel/Netlify (frontend)** and **Render/Railway (backend + managed Postgres)**.
  
-No implementation begins in this milestone. Every decision below is justified, scoped to what our 4 people student team is able to realistically deliver across 3 weeks, and traceable from requirement → architecture → API → database → UI → test → deployment.
+No implementation begins in this milestone. Every decision below is justified, scoped to what our 4 people student team is able to realistically deliver across 3 weeks, and traceable from Requirement to Architecture to API then Database then UI to Test and finally Deployment.
 
 ## 2. System Overview
 
@@ -16,14 +16,13 @@ No implementation begins in this milestone. Every decision below is justified, s
 **Users:**
 - **Customer (guest/registered):** browses and purchases products.
 - **Administrator:** manages catalog and order lifecycle.
-- (No third role such as "seller" or "courier" is included since that would be out of scope, see section 4 assumptions.)
-**Business problem solved:** Provides a minimal but complete online retail workflow; discovery, cart, checkout, order tracking. Demonstrating a real e-commerce transaction lifecycle rather than a generic CRUD demo.
+- **Business problem solved:** Provides a minimal but complete online retail workflow; discovery, cart, checkout, order tracking. Showing a real e-commerce transaction lifecycle rather than a generic CRUD demo.
  
 **Major capabilities:** authentication & authorization, product catalog with search/filter, cart management, order placement and history, and an admin back-office for catalog/order management.
  
-**System boundary:** The system owns product, user, cart, and order data. It does **not** integrate a real payment gateway. Checkout produces an order record with a simulated payment status, which is realistic for an academic deployment and avoids PCI-DSS scope. It does not include shipping-carrier integration, email delivery infrastructure beyond a stub, or multi-tenant/marketplace features.
+**System boundary:** The system owns product, user, cart, and order data. It does **not** integrate a real payment gateway. Checkout produces an order record with a simulated payment status. It does not include shipping-carrier integration, email delivery infrastructure beyond a stub, or multi-tenant/marketplace features.
  
-**High-level technical architecture:** A single-page React frontend consumes a REST API exposed by an Express backend structured in MVC (Controllers → Services → Repositories → Models), backed by PostgreSQL, with JWT-based stateless authentication and role-based authorization for admin routes.
+**High-level technical architecture:** A single-page React frontend consumes a REST API exposed by an Express backend structured in MVC (Controllers, Services, Repositories then Models), backed by PostgreSQL, with JWT-based stateless authentication and role-based authorization for admin routes.
 
 ## 3. Requirements Analysis
  
@@ -33,7 +32,7 @@ Agile process, TDD, MVC architecture, full-stack app, REST API, database persist
 ### 3.2 Implicit Requirements
 - Passwords must never be stored in plaintext
 - The system must distinguish authenticated vs. unauthenticated access
-- Data must remain consistent across cart → order transitions
+- Data must remain consistent across cart till order transitions
 - The API must be independently testable from the UI
 ### 3.3 Ambiguities Identified
 | # | Ambiguity | Resolution Approach |
@@ -45,15 +44,15 @@ Agile process, TDD, MVC architecture, full-stack app, REST API, database persist
 | A5 | Real-time features not mentioned | Assumed out of scope since there's no requirement basis |
  
 ### 3.4 Assumptions
-1. **No real payment gateway** — checkout is simulated (status: `pending` to `paid`) to avoid PCI scope.
-2. **Single currency, single locale** — no i18n/multi-currency requirement stated.
+1. **No real payment gateway** – checkout is simulated (status: `pending` to `paid`) to avoid PCI scope.
+2. **Single currency, single locale** — no i18n/multi-currency requirement needed.
 3. **Two roles only** — `customer` and `admin`
 4. **Guest browsing allowed**, but cart persistence and checkout require authentication
 5. **Soft-delete for products** — admins "deactivate" rather than hard-delete, to preserve referential integrity with historical orders.
 6. **Email is out of scope for real delivery** — password reset / order confirmation emails are stubbed/logged, not sent via a live SMTP provider, unless we say otherwise?.
 ### 3.5 Functional Requirements
  
-MoSCoW: **M**ust, **S**hould, **C**ould, **W**on't (this iteration)
+MoSCoW: **M**ust, **S**hould, **C**ould, **W**on't
  
 | ID | Description | Actor | Priority | Acceptance Criteria |
 |---|---|---|---|---|
@@ -64,7 +63,7 @@ MoSCoW: **M**ust, **S**hould, **C**ould, **W**on't (this iteration)
 | T-05 | Search products by name | Customer | Must | Query param filters results case-insensitively |
 | T-06 | Filter products by category/price | Customer | Should | Filters combine with AND logic |
 | T-07 | View product details | Customer | Must | GET /products/:id returns 404 for missing/inactive product |
-| T-08 | Add product to cart | Customer | Must | Authenticated only; quantity ≥1; stock validated |
+| T-08 | Add product to cart | Customer | Must | Authenticated only; quantity >=1; stock validated |
 | T-09 | Update cart item quantity | Customer | Must | Quantity 0 removes item; exceeds stock is 400 |
 | T-10 | Remove item from cart | Customer | Must | Item removed; cart total recalculated |
 | T-11 | Checkout (create order from cart) | Customer | Must | Cart must not br empty; stock validated; order created atomically then cart cleared |
@@ -73,7 +72,7 @@ MoSCoW: **M**ust, **S**hould, **C**ould, **W**on't (this iteration)
 | T-14 | Manage profile (name, address) | Customer | Should | Updates persisted; email change requires re-verification (Could) |
 | T-15 | Admin login (same endpoint, role-checked) | Admin | Must | Role claim in JWT gates admin routes |
 | T-16 | Create product | Admin | Must | Validates required fields; 201 on success |
-| T-17 | Update product | Admin | Must | Partial update supported (PATCH semantics) |
+| T-17 | Update product | Admin | Must | Partial update supported |
 | T-18 | Deactivate product | Admin | Must | Soft delete; hidden from customer catalog |
 | T-19 | Manage categories (CRUD) | Admin | Should | Category deletion blocked if products reference it |
 | T-20 | View all orders | Admin | Must | Paginated; filterable by status |
