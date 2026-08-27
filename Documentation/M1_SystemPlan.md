@@ -150,11 +150,11 @@ The backend will process requests, apply authentication and authorisation rules,
 
 This architecture provides a clear separation of concerns between the user interface, application logic, and persistent data layers.
 
-## Full-Stack System Architecture
+## 6. Full-Stack System Architecture
 
 The system follows a full-stack architecture consisting of a frontend application, backend API, database, and supporting authentication and external services. The architecture separates the user interface from the business logic and data layer, allowing each component to have a clear responsibility.
 
-### Architecture Components
+### 6.1 Architecture Components
 
 - **Frontend:** Provides the user interface through which customers and administrators interact with the system.
 - **Backend API:** Handles business logic, request processing, validation, authentication, and communication between the frontend and database.
@@ -162,7 +162,7 @@ The system follows a full-stack architecture consisting of a frontend applicatio
 - **Authentication:** Uses JWT-based authentication to securely identify authenticated users and control access to protected resources.
 - **External Services:** The system may communicate with external services where required, such as payment or other third-party services.
 
-### Architecture Flow
+### 6.2 Architecture Flow
 
 The general flow of the system is:
 
@@ -174,7 +174,7 @@ For protected operations:
 
 The frontend sends HTTP requests to the backend API. The backend validates the request, applies the required business logic, and communicates with the database when data needs to be retrieved or modified. The API then returns the appropriate response to the frontend.
 
-### System Architecture Diagram
+### 6.3 System Architecture Diagram
 
 ```text
                          ┌──────────────────────┐
@@ -203,5 +203,5 @@ The frontend sends HTTP requests to the backend API. The backend validates the r
                                  ▼       ▼
                          ┌──────────┐  ┌──────────────┐
                          │   JWT    │  │   Database   │
-                         │Security  │  │              │
+                         │ Security │  │              │
                          └──────────┘  └──────────────┘
