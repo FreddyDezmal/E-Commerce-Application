@@ -98,3 +98,54 @@ Multi-seller marketplace, live payment gateway, real-time stock websockets, prod
 | **Testability** | All business logic isolated in Service layer, unit-testable without HTTP or DB. |
  
 Unrealistic enterprise SLAs are avoided on purpose since they aren't achievable more meaningful on student-free infrastructure and would not be honestly demonstratable
+
+## 5. Backend & Frontend Framework Justification
+
+### 5.1 Frontend Framework: React
+
+React was selected as the frontend framework for the e-commerce web application because it provides a component-based architecture that supports the development of reusable and maintainable user interface components. The application contains multiple user-facing features, including product browsing, search and filtering, authentication, shopping cart management, checkout, order history, and an administrative interface. React allows these features to be organised into reusable components and pages.
+
+React is also suitable for building a responsive single-page application (SPA). Its component-based structure allows the customer storefront and administrative interface to share common UI elements where appropriate while maintaining separation between different application features.
+
+The framework integrates effectively with RESTful APIs through HTTP requests, allowing the frontend to communicate with the Node.js and Express backend using JSON data. This separation ensures that the presentation layer remains independent from the backend business logic and database layer.
+
+React was therefore selected because it supports:
+
+- Component-based and reusable UI development.
+- Responsive cross-platform web interfaces.
+- Clear separation between frontend presentation and backend logic.
+- Integration with RESTful APIs using JSON.
+- Maintainable development of customer and administrator interfaces.
+- A large ecosystem and community, which supports efficient development for a four-person student team.
+
+### 5.2 Backend Framework: Node.js and Express
+
+Node.js was selected as the backend runtime environment, with Express used as the web application framework. This combination provides a lightweight and flexible environment for developing the RESTful API required by the e-commerce application.
+
+Using JavaScript across both the frontend and backend improves development consistency by allowing the team to work primarily within a single programming language. Express provides routing and middleware capabilities that support the implementation of API endpoints, authentication, authorisation, validation, and centralised error handling.
+
+The backend will follow the project's layered architecture based on MVC principles, extended with Service and Repository layers. This approach separates responsibilities between the HTTP/API layer, business logic, and database access layer, improving maintainability and testability.
+
+The planned backend flow is:
+
+Routes → Controllers → Services → Repositories → PostgreSQL Database
+
+This separation allows business logic to be isolated within the Service layer and database operations to be managed through the Repository layer. As a result, the application can be tested and maintained more easily as the system grows.
+
+Node.js and Express were therefore selected because they provide:
+
+- Support for developing RESTful APIs.
+- Lightweight and flexible routing through Express.
+- Middleware support for JWT authentication and role-based authorisation.
+- Centralised error handling and request validation.
+- Compatibility with the MVC, Service, and Repository architecture.
+- Consistency through the use of JavaScript across the full stack.
+- A suitable development environment for a small Agile development team.
+
+### 5.3 Framework Integration
+
+The React frontend and Node.js/Express backend will operate as separate components of the full-stack system. The frontend will communicate with the backend through RESTful API requests over HTTPS. Data will be exchanged primarily in JSON format.
+
+The backend will process requests, apply authentication and authorisation rules, execute business logic, and interact with the PostgreSQL database. The resulting data or response will then be returned to the React frontend.
+
+This architecture provides a clear separation of concerns between the user interface, application logic, and persistent data layers.
