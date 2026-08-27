@@ -205,3 +205,38 @@ The frontend sends HTTP requests to the backend API. The backend validates the r
                          │   JWT    │  │   Database   │
                          │ Security │  │              │
                          └──────────┘  └──────────────┘
+
+## 7. API Design (Endpoints + JWT Security)
+
+The system will use a RESTful API to enable communication between the frontend and backend. The API will provide endpoints for authentication, users, products, and orders. HTTP methods will be used according to the operation being performed, following standard REST principles.
+
+### 7.1 API Endpoints
+
+| Method | Endpoint | Description | Authentication |
+|---|---|---|---|
+| POST | `/api/auth/register` | Register a new user account | No |
+| POST | `/api/auth/login` | Authenticate a user and issue a JWT | No |
+| GET | `/api/users/profile` | Retrieve the authenticated user's profile | JWT Required |
+| GET | `/api/products` | Retrieve all available products | No |
+| GET | `/api/products/{id}` | Retrieve a specific product | No |
+| POST | `/api/products` | Create a new product | JWT + Admin |
+| PUT | `/api/products/{id}` | Update an existing product | JWT + Admin |
+| DELETE | `/api/products/{id}` | Delete a product | JWT + Admin |
+| GET | `/api/orders` | Retrieve orders for the authenticated user | JWT Required |
+| GET | `/api/orders/{id}` | Retrieve a specific order | JWT Required |
+| POST | `/api/orders` | Create a new order | JWT Required |
+| PUT | `/api/orders/{id}` | Update an order | JWT Required |
+| DELETE | `/api/orders/{id}` | Cancel an order | JWT Required |
+
+### 7.2 JWT Authentication
+
+The system will use JSON Web Tokens (JWT) to authenticate users and protect secured API endpoints.
+
+When a user successfully logs in through `/api/auth/login`, the backend will validate the user's credentials. If the credentials are valid, the backend will generate a JWT and return it to the frontend.
+
+The frontend will include the JWT in the `Authorization` header when making requests to protected endpoints.
+
+Example:
+
+```text
+Authorization: Bearer <JWT_TOKEN>
