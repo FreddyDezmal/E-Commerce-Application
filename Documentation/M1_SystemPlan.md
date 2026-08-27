@@ -205,6 +205,7 @@ The frontend sends HTTP requests to the backend API. The backend validates the r
                          │   JWT    │  │   Database   │
                          │ Security │  │              │
                          └──────────┘  └──────────────┘
+```
 
 ## 7. API Design (Endpoints + JWT Security)
 
