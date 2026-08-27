@@ -149,3 +149,59 @@ The React frontend and Node.js/Express backend will operate as separate componen
 The backend will process requests, apply authentication and authorisation rules, execute business logic, and interact with the PostgreSQL database. The resulting data or response will then be returned to the React frontend.
 
 This architecture provides a clear separation of concerns between the user interface, application logic, and persistent data layers.
+
+## Full-Stack System Architecture
+
+The system follows a full-stack architecture consisting of a frontend application, backend API, database, and supporting authentication and external services. The architecture separates the user interface from the business logic and data layer, allowing each component to have a clear responsibility.
+
+### Architecture Components
+
+- **Frontend:** Provides the user interface through which customers and administrators interact with the system.
+- **Backend API:** Handles business logic, request processing, validation, authentication, and communication between the frontend and database.
+- **Database:** Stores application data such as users, products, orders, and other system information.
+- **Authentication:** Uses JWT-based authentication to securely identify authenticated users and control access to protected resources.
+- **External Services:** The system may communicate with external services where required, such as payment or other third-party services.
+
+### Architecture Flow
+
+The general flow of the system is:
+
+**User → Frontend → Backend API → Database**
+
+For protected operations:
+
+**User → Frontend → Backend API → JWT Authentication → Database**
+
+The frontend sends HTTP requests to the backend API. The backend validates the request, applies the required business logic, and communicates with the database when data needs to be retrieved or modified. The API then returns the appropriate response to the frontend.
+
+### System Architecture Diagram
+
+```text
+                         ┌──────────────────────┐
+                         │        Users         │
+                         │ Customers / Admins   │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │      Frontend        │
+                         │   User Interface     │
+                         └──────────┬───────────┘
+                                    │
+                              HTTP / REST
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │      Backend API     │
+                         │ Business Logic       │
+                         │ Validation           │
+                         │ Authentication       │
+                         └───────┬───────┬──────┘
+                                 │       │
+                         JWT Auth │       │ Data Access
+                                 │       │
+                                 ▼       ▼
+                         ┌──────────┐  ┌──────────────┐
+                         │   JWT    │  │   Database   │
+                         │Security  │  │              │
+                         └──────────┘  └──────────────┘
