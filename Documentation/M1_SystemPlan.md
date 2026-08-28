@@ -99,9 +99,26 @@ Multi-seller marketplace, live payment gateway, real-time stock websockets, prod
  
 Unrealistic enterprise SLAs are avoided on purpose since they aren't achievable more meaningful on student-free infrastructure and would not be honestly demonstratable
 
-## 5. Backend & Frontend Framework Justification
+## 5. Agile SDLC Model
+ 
+**Why Agile:** Agile's iterative feedback loop suits this better than Waterfall's up-front, unchangeable spec
+ 
+**Why not Waterfall:** Waterfall assumes requirements are fully known and stable before design, and defers testing to the end. This project explicitly requires TDD (testing *drives* development, not the reverse). A single long Waterfall phase would also make grading progress per milestone impossible to demonstrate incrementally.
+ 
+**Sprint structure (suggested, 2-week sprints mapped to milestones):**
+- Sprint 0 (this milestone): planning, architecture, no code.
+- Sprint 1–2 (Milestone 2): backend models, repositories, services, auth (TDD from day one).
+- Sprint 3 (Milestone 3): API integration, controller wiring, Postman/integration tests.
+- Sprint 4–5 (Milestone 4): frontend build against the real API.
+- Sprint 6 (Milestone 5): test hardening, E2E, bug fixes.
+- Sprint 7 (Milestone 6): deployment, CI/CD finalization, demo prep.
+**Feedback loop:** each sprint ends with a short internal review; backlog re-prioritized (MoSCoW) if scope pressure appears.
+ 
+Plan → Design → Build (TDD) → Test → Review → Retro → back to Plan
 
-### 5.1 Frontend Framework: React
+## 6. Backend & Frontend Framework Justification
+
+### 6.1 Frontend Framework: React
 
 React was selected as the frontend framework for the e-commerce web application because it provides a component-based architecture that supports the development of reusable and maintainable user interface components. The application contains multiple user-facing features, including product browsing, search and filtering, authentication, shopping cart management, checkout, order history, and an administrative interface. React allows these features to be organised into reusable components and pages.
 
@@ -118,7 +135,7 @@ React was therefore selected because it supports:
 - Maintainable development of customer and administrator interfaces.
 - A large ecosystem and community, which supports efficient development for a four-person student team.
 
-### 5.2 Backend Framework: Node.js and Express
+### 6.2 Backend Framework: Node.js and Express
 
 Node.js was selected as the backend runtime environment, with Express used as the web application framework. This combination provides a lightweight and flexible environment for developing the RESTful API required by the e-commerce application.
 
@@ -142,7 +159,7 @@ Node.js and Express were therefore selected because they provide:
 - Consistency through the use of JavaScript across the full stack.
 - A suitable development environment for a small Agile development team.
 
-### 5.3 Framework Integration
+### 6.3 Framework Integration
 
 The React frontend and Node.js/Express backend will operate as separate components of the full-stack system. The frontend will communicate with the backend through RESTful API requests over HTTPS. Data will be exchanged primarily in JSON format.
 
@@ -150,11 +167,11 @@ The backend will process requests, apply authentication and authorisation rules,
 
 This architecture provides a clear separation of concerns between the user interface, application logic, and persistent data layers.
 
-## 6. Full-Stack System Architecture
+## 7. Full-Stack System Architecture
 
 The system follows a full-stack architecture consisting of a frontend application, backend API, database, and supporting authentication and external services. The architecture separates the user interface from the business logic and data layer, allowing each component to have a clear responsibility.
 
-### 6.1 Architecture Components
+### 7.1 Architecture Components
 
 - **Frontend:** Provides the user interface through which customers and administrators interact with the system.
 - **Backend API:** Handles business logic, request processing, validation, authentication, and communication between the frontend and database.
@@ -162,7 +179,7 @@ The system follows a full-stack architecture consisting of a frontend applicatio
 - **Authentication:** Uses JWT-based authentication to securely identify authenticated users and control access to protected resources.
 - **External Services:** The system may communicate with external services where required, such as payment or other third-party services.
 
-### 6.2 Architecture Flow
+### 7.2 Architecture Flow
 
 The general flow of the system is:
 
@@ -174,7 +191,7 @@ For protected operations:
 
 The frontend sends HTTP requests to the backend API. The backend validates the request, applies the required business logic, and communicates with the database when data needs to be retrieved or modified. The API then returns the appropriate response to the frontend.
 
-### 6.3 System Architecture Diagram
+### 7.3 System Architecture Diagram
 
 ```text
                          ┌──────────────────────┐
@@ -207,37 +224,62 @@ The frontend sends HTTP requests to the backend API. The backend validates the r
                          └──────────┘  └──────────────┘
 ```
 
-## 7. API Design (Endpoints + JWT Security)
-
-The system will use a RESTful API to enable communication between the frontend and backend. The API will provide endpoints for authentication, users, products, and orders. HTTP methods will be used according to the operation being performed, following standard REST principles.
-
-### 7.1 API Endpoints
-
-| Method | Endpoint | Description | Authentication |
-|---|---|---|---|
-| POST | `/api/auth/register` | Register a new user account | No |
-| POST | `/api/auth/login` | Authenticate a user and issue a JWT | No |
-| GET | `/api/users/profile` | Retrieve the authenticated user's profile | JWT Required |
-| GET | `/api/products` | Retrieve all available products | No |
-| GET | `/api/products/{id}` | Retrieve a specific product | No |
-| POST | `/api/products` | Create a new product | JWT + Admin |
-| PUT | `/api/products/{id}` | Update an existing product | JWT + Admin |
-| DELETE | `/api/products/{id}` | Delete a product | JWT + Admin |
-| GET | `/api/orders` | Retrieve orders for the authenticated user | JWT Required |
-| GET | `/api/orders/{id}` | Retrieve a specific order | JWT Required |
-| POST | `/api/orders` | Create a new order | JWT Required |
-| PUT | `/api/orders/{id}` | Update an order | JWT Required |
-| DELETE | `/api/orders/{id}` | Cancel an order | JWT Required |
-
-### 7.2 JWT Authentication
-
-The system will use JSON Web Tokens (JWT) to authenticate users and protect secured API endpoints.
-
-When a user successfully logs in through `/api/auth/login`, the backend will validate the user's credentials. If the credentials are valid, the backend will generate a JWT and return it to the frontend.
-
-The frontend will include the JWT in the `Authorization` header when making requests to protected endpoints.
-
-Example:
-
-```text
-Authorization: Bearer <JWT_TOKEN>
+## 8. API Design
+ 
+All endpoints prefixed `/api`. Auth = `none | user | admin`.
+ 
+| Method | Endpoint | Purpose | Auth | Request Body | Success | Errors |
+|---|---|---|---|---|---|---|
+| POST | /auth/register | Create account | none | `{email, password, fullName}` | 201 `{user, token}` | 400, 409 |
+| POST | /auth/login | Authenticate | none | `{email, password}` | 200 `{user, token}` | 401 |
+| GET | /products | List/search/filter (paginated) | none | query: `?search=&category=&page=&limit=` | 200 `{items, total, page}` | 400 |
+| GET | /products/:id | Product detail | none | — | 200 product | 404 |
+| POST | /products | Create product | admin | `{name, price, stock, categoryId, description}` | 201 product | 400, 401, 403 |
+| PUT | /products/:id | Update product | admin | partial product fields | 200 product | 400, 401, 403, 404 |
+| DELETE | /products/:id | Deactivate product | admin | — | 204 | 401, 403, 404 |
+| GET | /categories | List categories | none | — | 200 array | — |
+| POST | /categories | Create category | admin | `{name}` | 201 | 400, 401, 403, 409 |
+| GET | /cart | Get current user's cart | user | — | 200 cart+items | 401 |
+| POST | /cart/items | Add item to cart | user | `{productId, quantity}` | 201 cart | 400, 401, 404 |
+| PUT | /cart/items/:id | Update quantity | user | `{quantity}` | 200 cart | 400, 401, 404 |
+| DELETE | /cart/items/:id | Remove item | user | — | 204 | 401, 404 |
+| POST | /orders | Checkout (cart → order) | user | `{shippingAddressId}` | 201 order | 400 (empty cart/out of stock), 401 |
+| GET | /orders | List own orders (customer) / all orders (admin, `?userId=`) | user/admin | — | 200 paginated | 401 |
+| GET | /orders/:id | Order detail | user/admin | — | 200 order | 401, 403, 404 |
+| PUT | /orders/:id/status | Update order status | admin | `{status}` | 200 order | 400 (invalid transition), 401, 403, 404 |
+| GET | /users/me | Current profile | user | — | 200 user | 401 |
+| PUT | /users/me | Update profile | user | `{fullName, ...}` | 200 user | 400, 401 |
+ 
+REST conventions followed: nouns for resources, plural collection names, HTTP verbs carry the action, status codes are semantically correct (201 for creation, 204 for deletion with no body, 403 vs 401 distinguished — see §12).
+ 
+## 9. JWT Security Design
+ 
+**Registration:** password validated (min length/complexity), hashed with bcrypt before storage — plaintext password is never persisted or logged.
+ 
+**Login:** email looked up, bcrypt compare against `password_hash`; on success, a JWT is issued.
+ 
+**JWT payload (minimal, non-sensitive):**
+```json
+{ "sub": "<user-id>", "role": "customer", "iat": ..., "exp": ... }
+```
+The payload **must not** contain the password hash, email (avoid unnecessary PII in a client-readable token), or any data that changes frequently (JWT can't be updated without reissue). Email/name are fetched via `/users/me` when needed, not decoded from the token.
+ 
+**Token expiration:** short-lived access token (e.g., 60 minutes). A refresh-token pattern is a **Should**, not a **Must**, given team scope — documented as a known trade-off (§9) rather than implemented without justification.
+ 
+**Protected routes:** `authenticate` middleware verifies signature + expiry, attaches `req.user = {id, role}`. Missing/invalid token → 401.
+ 
+**Role-based authorization:** a second `requireRole('admin')` middleware runs after `authenticate` for admin-only routes → 403 if role mismatch (distinguished from 401 "not authenticated" vs 403 "authenticated but not permitted" — a common and important distinction the plan enforces explicitly).
+ 
+**Authentication vs. Authorization (explicitly distinguished):**
+- **Authentication** = "who are you" — verified once at login, re-verified per request via JWT signature check.
+- **Authorization** = "what are you allowed to do" — checked per-route via role middleware, and per-resource in the Service layer (e.g., a customer can only fetch *their own* order — checked by comparing `order.user_id` to `req.user.id`, not just role).
+**Input validation:** all request bodies validated (e.g., via `zod` or `express-validator`) before reaching the Service layer — rejects malformed input with 400 before any DB call.
+ 
+**Rate limiting:** `express-rate-limit` applied to `/auth/login` and `/auth/register` specifically (brute-force mitigation), not globally (would harm legitimate browsing).
+ 
+**CORS:** restricted to the deployed frontend origin only, not `*`.
+ 
+**Secure transport:** HTTPS enforced at the hosting layer (Render/Vercel provide this by default) — the app assumes it never runs auth over plain HTTP in any deployed environment.
+ 
+**Secrets management:** JWT secret, DB connection string, and any future API keys live in environment variables (`.env`, excluded via `.gitignore`), injected via the hosting provider's secret store in production — never committed to Git.
+ 
