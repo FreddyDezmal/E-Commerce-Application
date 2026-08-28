@@ -474,4 +474,178 @@ The payload **must not** contain the password hash, email (avoid unnecessary PII
 **Secure transport:** HTTPS enforced at the hosting layer (Render/Vercel provide this by default) — the app assumes it never runs auth over plain HTTP in any deployed environment.
  
 **Secrets management:** JWT secret, DB connection string, and any future API keys live in environment variables (`.env`, excluded via `.gitignore`), injected via the hosting provider's secret store in production — never committed to Git.
- 
+ ## 13. UI/UX Design – Wireframes and Figma
+ 13.1 UI/UX Approach
+
+The e-commerce platform will feature a responsive and customer-oriented interface catering for the needs of both the customers and administrators. The interface design will be initiated via low-fidelity wireframes which will be turned into an interactive high-fidelity design in Figma.
+
+In designing the UI focus will be made on the easy navigation, understandable product information, quick shopping experience and consistency in various devices.
+
+The Figma design will serve as a model for the implementation of the front-end in React afterwards.
+
+The main customer steps in the application are as follows:
+
+Home → Products → Product Details → Cart → Checkout → Confirmation of the order → Order history
+
+The main administrator steps in the application are as follows:
+
+Login → Admin Dashboard → Product Management / Order management
+
+13.2 Customer screens
+
+The Figma design will comprise the following customer’s screens:
+screen	Main feature
+Home
+	Navigation, search, featured products and categories
+Products	Product catalogue, search and filters
+Product details	Product information, price, stock and Add to Cart
+Login	Email, password and authentication
+Register	Customer registration form
+
+Cart	Products, quantities, totals and checkout
+Checkout	Delivery information and order summary
+Order Confirmation	Order number, total and status
+Order History	Previous orders and statuses
+profile	Customer information and address
+
+13.3 Administrator Screens
+
+The administrator interface will include:
+Screen	Main features
+Admin Dashboard	Product, user and order overview
+Product Management 	Add edit and deactivate products
+Order Management 	View orders and update order status
+
+The features for administrators will be provided only to the users who have the administrator role, using the JWT-based authorisation mechanism.
+
+13.4 Responsive Design  
+
+The interface will be tailored for the following:
+
+Mobile: ≤480px
+Tablet: 481–768px
+Desktop: ≥1024px
+
+The design will adjust to smaller screen types through the resizing of product cards, changing navigation, changing forms, and ensuring that important controls are clickable.
+
+The design will implement basic accessibility principles: readable text, clear button name, good contrast, semantic structure, and keyboard-friendly forms.
+
+13.5 Figma Prototype  
+
+The creation of a high-fidelity prototype in Figma allows demonstrating the basic workflow of the customer and administrator before the development begins.
+
+The prototype will include the same:
+
+•	Colour scheme
+•	Typography
+•	Navigation
+•	Button style
+•	Product card design
+•	Forms design
+
+The prototype will be composed of the clickable links between the main screens showing the planned navigation and the user experience. 
+
+Figma Prototype: https://www.figma.com/design/gL6RvlEqfEkbT0fERdN6dg/SEN371-E-Commerce-Application?node-id=0-1&t=LtFF0NUzjSewxwmY-1
+## 14. Testing Plan
+14. Testing Plan
+14.1 Testing Strategy
+
+Testing will be conducted continuously during the development phase and not just at the end of the project. The Test-Driven Development framework will be employed. 
+
+The tests in the system will include functional testing for the backend, REST API, database, and front end system.
+
+14.2 Testing Tiers
+
+Unit Testing
+
+Unit testing will take place when checking out individual functions. Validation, cart calculation, authentication logic, and order calculation functions will undergo testing.
+
+Integration Testing
+
+Integration tests will check the process of how Express backend communicates with PostgreSQL database by registering new users, retrieving products from the database, and creating new orders.
+
+API Testing
+
+Testing at this tier will occur for the REST API independently from the user interface. The API testing will be done to validate requests and responses, track the status of responses, and check authentication.
+
+Security Testing
+
+JWT authentication and role-based authorization will also be tested to ensure no access to secure endpoints without valid permission.
+
+End-to-End Testing
+
+The final tier of testing will check entire user processes of Registration → Login → Browsing products → Adding products to shopping cart → Payment and Order/Administrator process of Logging in → Admin dashboard view → manage products → manage Orders
+14.3 Planned Test Cases
+ID	Test	Expected Result
+TC01	Register with valid details	Account created
+TC02	Register using existing email	Registration rejected
+TC03	Login with valid credentials	JWT returned
+TC04	Login with invalid credentials	Access denied
+TC05	Access protected endpoint without JWT	401 response
+TC06	Customer accesses admin endpoint	403 response
+TC07	Retrieve products	Products returned
+TC08	Add product to cart	Product added
+TC09	Checkout with valid cart	Order created
+TC10	Checkout with empty cart	Request rejected
+TC11	Admin creates product	Product created
+TC12	Admin updates order status	Status updated
+
+14.4 Testing Criterion of success
+
+Testing will be classified to be successful if key automated tests pass along with authentication and authorization functioning as intended together with database operations working correctly and being able to perform main customer and administrator process with no critical mistakes.
+
+The application will also be tested on supported desktop, tablet, and mobile screens as well as on recent browsers.
+
+## 15. Deployment Plan
+15.1 Deployment Architecture
+
+The intended production environment will consist of:
+
+React Frontend 
+
+→ Node.js/Express REST API
+
+→ PostgreSQL Database
+
+The ultimate hosting service providers remain undefined. The team will choose the hosting option by analyzing its compatibility, reliability, cost, integration with GitHub and its support of HTTPS and environment variables.
+
+The potential hosting options for frontend applications include GitHub Pages, Vercel, or Netlify. The potential hosting options for backend applications include Render and Railway services.
+
+15.2 Deployment Process
+
+The planned deployment process includes:
+
+Developer -> Feature Branch used->Pull Request->Code Review->Develop stage->Automated tests running->Main branch->Deploying software to production
+The deployment of the software can be automated with the help of GitHub Actions.
+13.3 Security and Configuration
+
+The sensitive configurations shall not be pushed to GitHub.
+
+Environment variables shall be used for the following values:
+
+•	DATABASE_URL
+•	JWT_SECRET
+•	API_URL
+
+The application shall run through HTTPS and use JWT authentication and role-based access control for the resources that shall be accessed. 
+
+15.4 Deployment Verification
+
+Before the system is deemed deployed, the team shall verify the following points:
+
+•	The frontend is loading.
+•	The frontend is connected with the backend.
+•	The backend is connected to PostgreSQL.
+•	The login and registration are done.
+•	The products are fetched.
+•	The cart and checkout process work.
+•	The orders are stored properly.
+•	The admin operations are protected.
+•	The application works across different browsers and sizes. 
+
+15.5 Deployment Success Criteria
+
+The deployment shall be considered successful when the frontend is available, the backend API is working, the database is connected, and the customer and admin operations are working in production mode.
+
+
+
