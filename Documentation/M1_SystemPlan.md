@@ -1,3 +1,9 @@
+## Members:
+### 1. Phokwane Mapadimeng
+### 2. Emmanuel Teodor Booysen Joao
+### 3. Omphile Moche
+### 4. Mohau Mokoena
+
 # Milestone 1: System Plan
 ### E-Commerce Web Application
 
