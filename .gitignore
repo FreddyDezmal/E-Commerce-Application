@@ -2,6 +2,20 @@ node_modules/
 .env
 .env.*
 !.env.example
+!legacy-nodejs/.env.example
 npm-debug.log*
 *.log
 prisma/dev.db
+
+# ── .NET / ASP.NET Core (current backend) ──────────────────
+bin/
+obj/
+out/
+*.user
+*.suo
+appsettings.Development.json
+appsettings.*.local.json
+!appsettings.Development.example.json
+.vs/
+*.pdb
+TestResults/
