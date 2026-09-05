@@ -22,7 +22,10 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // Each entity's Fluent API configuration lives in its own IEntityTypeConfiguration<T> class under Data/Configurations
+        // Each entity's Fluent API configuration lives in its own
+        // IEntityTypeConfiguration<T> class under Data/Configurations,
+        // per Milestone 1 v1.1 Deliverable 2 §2.5 — keeps this method
+        // small and each entity's rules easy to find and review.
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
     }
 }
