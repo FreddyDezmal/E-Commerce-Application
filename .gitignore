@@ -5,3 +5,15 @@ node_modules/
 npm-debug.log*
 *.log
 prisma/dev.db
+
+# .NET / C# (added for EF Core migration to Supabase)
+src/bin/
+src/obj/
+tests/**/bin/
+tests/**/obj/
+appsettings.Development.json
+appsettings.Production.json
+appsettings.Local.json
+.vs/
+*.user
+*.suo
