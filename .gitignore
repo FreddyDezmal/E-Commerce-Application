@@ -18,3 +18,4 @@ appsettings.Local.json
 .vs/
 *.user
 *.suo
+src/Properties/launchSettings.json
