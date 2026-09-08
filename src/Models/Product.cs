@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace ECommerceApi.Models;
 
 public class Product
@@ -16,6 +18,11 @@ public class Product
     public bool IsDeleted { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    // Concurrency token: protects against two simultaneous requests
+    // (e.g. two orders) both decrementing stock based on stale reads.
+    [Timestamp]
+    public byte[] RowVersion { get; set; } = default!;
 
     public Category? Category { get; set; }
     public ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();

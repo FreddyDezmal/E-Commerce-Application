@@ -1,4 +1,5 @@
 using ECommerceApi.Data;
+using ECommerceApi.Exceptions;
 using ECommerceApi.Models;
 using ECommerceApi.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -43,7 +44,12 @@ public class UserRepository : IUserRepository
 
     public async Task<User> UpdateProfileAsync(Guid id, string? fullName)
     {
-        var user = await _context.Users.FirstAsync(u => u.Id == id);
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+        if (user is null)
+        {
+            throw new NotFoundAppException("User");
+        }
+
         if (fullName is not null)
         {
             user.FullName = fullName;
