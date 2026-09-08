@@ -1,4 +1,5 @@
 using ECommerceApi.Data;
+using ECommerceApi.Exceptions;
 using ECommerceApi.Models;
 using ECommerceApi.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -67,7 +68,9 @@ public class ProductRepository : IProductRepository
 
     public async Task<Product> UpdateAsync(Guid id, Action<Product> apply)
     {
-        var product = await _context.Products.FirstAsync(p => p.Id == id);
+        var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == id)
+            ?? throw new NotFoundAppException("Product");
+
         apply(product);
         await _context.SaveChangesAsync();
         return product;
@@ -75,7 +78,9 @@ public class ProductRepository : IProductRepository
 
     public async Task<Product> SoftDeleteAsync(Guid id)
     {
-        var product = await _context.Products.FirstAsync(p => p.Id == id);
+        var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == id)
+            ?? throw new NotFoundAppException("Product");
+
         product.IsDeleted = true;
         await _context.SaveChangesAsync();
         return product;
@@ -83,8 +88,18 @@ public class ProductRepository : IProductRepository
 
     public async Task DecrementStockAsync(Guid productId, int quantity)
     {
-        // Loaded and tracked so the decrement is actually persisted on SaveChangesAsync.
-        var product = await _context.Products.FirstAsync(p => p.Id == productId);
+        if (quantity <= 0)
+            throw new ValidationException("Quantity must be greater than zero");
+
+        var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == productId)
+            ?? throw new NotFoundAppException("Product");
+
+        if (product.StockQuantity < quantity)
+        {
+            throw new ConflictAppException(
+                $"Insufficient stock for product {productId}. Available: {product.StockQuantity}, requested: {quantity}");
+        }
+
         product.StockQuantity -= quantity;
         await _context.SaveChangesAsync();
     }

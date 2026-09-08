@@ -1,4 +1,5 @@
 using ECommerceApi.Data;
+using ECommerceApi.Exceptions;
 using ECommerceApi.Models;
 using ECommerceApi.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -45,7 +46,12 @@ public class CategoryRepository : ICategoryRepository
 
     public async Task DeleteAsync(Guid id)
     {
-        var category = await _context.Categories.FirstAsync(c => c.Id == id);
+        var category = await _context.Categories.FirstOrDefaultAsync(c => c.Id == id);
+        if (category is null)
+        {
+            throw new NotFoundAppException("Category");
+        }
+
         _context.Categories.Remove(category);
         await _context.SaveChangesAsync();
     }
