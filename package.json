@@ -1,0 +1,15 @@
+{
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/node": "^26.4.1",
+    "prisma": "^5.22.0",
+    "ts-node": "^10.9.2"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "bcrypt": "^6.0.0"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  }
+}
