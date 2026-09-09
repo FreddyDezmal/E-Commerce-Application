@@ -79,12 +79,6 @@ public class ProductService : IProductService
 
     public async Task<ProductResponse> UpdateProductAsync(Guid id, UpdateProductRequest request)
     {
-        var existing = await _productRepository.FindByIdAsync(id);
-        if (existing is null)
-        {
-            throw new NotFoundAppException("Product");
-        }
-
         if (request.Price is { } price && price < 0)
         {
             throw new ValidationException("Price must be zero or greater");
@@ -94,6 +88,17 @@ public class ProductService : IProductService
             throw new ValidationException("Stock quantity must be zero or greater");
         }
 
+        if (request.CategoryId is { } categoryId)
+        {
+            var category = await _categoryRepository.FindByIdAsync(categoryId);
+            if (category is null)
+            {
+                throw new NotFoundAppException("Category");
+            }
+        }
+
+        // Existence of the product itself is checked inside UpdateAsync,
+        // which throws NotFoundAppException if it's missing.
         var updated = await _productRepository.UpdateAsync(id, product =>
         {
             if (request.Name is not null) product.Name = request.Name;
@@ -108,11 +113,8 @@ public class ProductService : IProductService
 
     public async Task<ProductResponse> DeactivateProductAsync(Guid id)
     {
-        var existing = await _productRepository.FindByIdAsync(id);
-        if (existing is null)
-        {
-            throw new NotFoundAppException("Product");
-        }
+        // Existence is checked inside SoftDeleteAsync, which throws
+        // NotFoundAppException if the product is missing.
         var deactivated = await _productRepository.SoftDeleteAsync(id);
         return Map(deactivated);
     }
