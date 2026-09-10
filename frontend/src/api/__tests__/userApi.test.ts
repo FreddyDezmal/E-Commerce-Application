@@ -19,7 +19,7 @@ describe('userApi', () => {
 
   it('fetches the current profile from /api/users/me', async () => {
     setToken('token');
-    const profile = { id: 'u1', email: 'a@b.com', fullName: 'Ada', role: 'Customer', createdAt: '' };
+    const profile = { id: 'u1', email: 'a@b.com', fullName: 'Ada', role: 'customer', createdAt: '' };
     (fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValue(jsonResponse(profile));
 
     const result = await userApi.getMe();
@@ -32,7 +32,7 @@ describe('userApi', () => {
   it('updates only the fields the backend allows (fullName)', async () => {
     setToken('token');
     (fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValue(
-      jsonResponse({ id: 'u1', email: 'a@b.com', fullName: 'New Name', role: 'Customer', createdAt: '' })
+      jsonResponse({ id: 'u1', email: 'a@b.com', fullName: 'New Name', role: 'customer', createdAt: '' })
     );
 
     await userApi.updateMe({ fullName: 'New Name' });
