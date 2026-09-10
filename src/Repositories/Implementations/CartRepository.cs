@@ -1,4 +1,5 @@
 using ECommerceApi.Data;
+using ECommerceApi.Exceptions;
 using ECommerceApi.Models;
 using ECommerceApi.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -37,24 +38,60 @@ public class CartRepository : ICartRepository
             .FirstOrDefaultAsync(ci => ci.CartId == cartId && ci.ProductId == productId);
     }
 
+    // Adding a product already in the cart increments its quantity instead
+    // of creating a duplicate row for the same (cartId, productId) pair.
     public async Task<Cart> AddItemAsync(Guid cartId, Guid productId, int quantity)
     {
-        _context.CartItems.Add(new CartItem { CartId = cartId, ProductId = productId, Quantity = quantity });
+        if (quantity <= 0)
+        {
+            throw new ValidationException("Quantity must be greater than zero");
+        }
+
+        var existing = await FindItemAsync(cartId, productId);
+        if (existing is not null)
+        {
+            existing.Quantity += quantity;
+        }
+        else
+        {
+            _context.CartItems.Add(new CartItem { CartId = cartId, ProductId = productId, Quantity = quantity });
+        }
+
         await _context.SaveChangesAsync();
         return await GetCartAsync(cartId);
     }
 
+    // A quantity of zero or less removes the item rather than saving an
+    // invalid value — matches the add-to-cart UX most users expect.
     public async Task<Cart> UpdateItemQuantityAsync(Guid cartId, Guid itemId, int quantity)
     {
-        var item = await _context.CartItems.FirstAsync(ci => ci.Id == itemId);
-        item.Quantity = quantity;
+        var item = await _context.CartItems.FirstOrDefaultAsync(ci => ci.Id == itemId);
+        if (item is null)
+        {
+            throw new NotFoundAppException("Cart item");
+        }
+
+        if (quantity <= 0)
+        {
+            _context.CartItems.Remove(item);
+        }
+        else
+        {
+            item.Quantity = quantity;
+        }
+
         await _context.SaveChangesAsync();
         return await GetCartAsync(cartId);
     }
 
     public async Task<Cart> RemoveItemAsync(Guid cartId, Guid itemId)
     {
-        var item = await _context.CartItems.FirstAsync(ci => ci.Id == itemId);
+        var item = await _context.CartItems.FirstOrDefaultAsync(ci => ci.Id == itemId);
+        if (item is null)
+        {
+            throw new NotFoundAppException("Cart item");
+        }
+
         _context.CartItems.Remove(item);
         await _context.SaveChangesAsync();
         return await GetCartAsync(cartId);
