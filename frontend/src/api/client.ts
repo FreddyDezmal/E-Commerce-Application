@@ -4,7 +4,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 if (!BASE_URL) {
   // Fail loudly in dev rather than silently calling a relative "/api/..."
-  // that happens to 404 in a confusing way.
+ 
   console.error(
     'VITE_API_BASE_URL is not set. Copy .env.example to .env and point it at the ASP.NET Core API.'
   );
@@ -12,11 +12,6 @@ if (!BASE_URL) {
 
 const TOKEN_KEY = 'ecommerce.auth.token';
 
-/**
- * Thrown for every non-2xx response. Carries the backend's ProblemDetails
- * body (status/title/detail/code) so callers and the UI can react to the
- * exact failure instead of a generic "Something went wrong".
- */
 export class ApiError extends Error {
   status: number;
   code?: string;
@@ -31,7 +26,7 @@ export class ApiError extends Error {
   }
 }
 
-/** Raised when the API is unreachable at all (network/DNS/CORS-preflight failure). */
+// Raised when the API is unreachable at all (network/DNS/CORS-preflight failure).
 export class NetworkError extends Error {
   constructor(message = 'Could not reach the server. Check your connection and try again.') {
     super(message);
@@ -51,10 +46,7 @@ export function clearToken(): void {
   localStorage.removeItem(TOKEN_KEY);
 }
 
-// Notified when the server tells us the current token is no longer valid,
-// so AuthContext can clear state and the router can redirect to /login.
-// This lives outside React so the plain API client never needs to import
-// React itself.
+// Notified when the server tells us the current token is no longer valid,so AuthContext can clear state and the router can redirect to /login.
 type UnauthorizedHandler = () => void;
 let onUnauthorized: UnauthorizedHandler | null = null;
 
@@ -66,7 +58,7 @@ interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   body?: unknown;
   query?: Record<string, string | number | boolean | undefined | null>;
-  auth?: boolean; // attach Authorization header — defaults to true
+  auth?: boolean; // attach Authorization header, defaults to true
 }
 
 function buildUrl(path: string, query?: RequestOptions['query']): string {
