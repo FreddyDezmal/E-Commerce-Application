@@ -70,7 +70,7 @@ export class OrderService {
     if (!order) {
       throw new NotFoundError('Order');
     }
-    // Ownership check (Milestone 1 §17): role alone is insufficient — a
+    // Ownership check (Milestone 1 §17): role alone is insufficient, a
     // customer may only view their own order, regardless of authentication.
     if (requesterRole !== 'admin' && order.userId !== requesterId) {
       throw new ForbiddenError('You do not have access to this order');

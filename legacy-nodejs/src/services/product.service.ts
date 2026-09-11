@@ -8,7 +8,7 @@ export class ProductService {
     private readonly productRepository: IProductRepository,
     // Retained for future category-existence checks on create/update;
     // not yet required by any test, kept minimal rather than unused-but-injected
-    // speculative behaviour (Milestone 2 §29 — no unnecessary abstractions).
+    // speculative behaviour (Milestone 2 §29, no unnecessary abstractions).
     private readonly categoryRepository: ICategoryRepository
   ) {}
 

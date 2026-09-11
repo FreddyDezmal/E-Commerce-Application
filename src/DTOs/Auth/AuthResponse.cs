@@ -1,6 +1,6 @@
 namespace ECommerceApi.DTOs.Auth;
 
-// Never includes PasswordHash — this is the "safe user" shape returned to the client
+// Never includes PasswordHash, this is the "safe user" shape returned to the client
 public class AuthResponse
 {
     public UserResponse User { get; set; } = null!;

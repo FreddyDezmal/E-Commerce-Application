@@ -8,7 +8,7 @@ import { toErrorMessage } from '../../lib/errorMessage';
 import type { Order, OrderStatus, PagedResult } from '../../types/api';
 
 // The backend only exposes a status transition (PUT /api/orders/{id}/status),
-// not full order editing — the admin UI only offers what the API supports
+// not full order editing, the admin UI only offers what the API supports
 // (Milestone 3 §26).
 const STATUSES: OrderStatus[] = ['Pending', 'Paid', 'Shipped', 'Delivered', 'Cancelled'];
 

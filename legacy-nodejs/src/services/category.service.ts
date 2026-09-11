@@ -26,7 +26,7 @@ export class CategoryService {
 
   /**
    * Category deletion is blocked if any active product still references it
-   * (Milestone 1 §11 — "Category deletion blocked if products reference it").
+   * (Milestone 1 §11, "Category deletion blocked if products reference it").
    */
   async deleteCategory(id: string): Promise<void> {
     const category = await this.categoryRepository.findById(id);
