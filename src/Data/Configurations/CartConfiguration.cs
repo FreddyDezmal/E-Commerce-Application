@@ -11,7 +11,7 @@ public class CartConfiguration : IEntityTypeConfiguration<Cart>
         builder.ToTable("carts");
         builder.HasKey(c => c.Id);
 
-        // One active cart per user (Milestone 1 §10 — users 1—1 carts).
+        // One active cart per user.
         builder.HasIndex(c => c.UserId).IsUnique();
     }
 }
