@@ -25,7 +25,7 @@ export const env = {
   jwtExpiresIn: optionalEnv('JWT_EXPIRES_IN', '60m'),
   bcryptSaltRounds: Number(optionalEnv('BCRYPT_SALT_ROUNDS', '12')),
 
-  corsOrigin: optionalEnv('CORS_ORIGIN', 'http://localhost:5173')
+  corsOrigin: optionalEnv('CORS_ORIGIN', 'http://localhost:3000'),
 } as const;
 
 export const isProduction = env.nodeEnv === 'production';

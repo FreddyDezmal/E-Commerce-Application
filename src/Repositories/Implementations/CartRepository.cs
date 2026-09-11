@@ -62,7 +62,7 @@ public class CartRepository : ICartRepository
     }
 
     // A quantity of zero or less removes the item rather than saving an
-    // invalid value — matches the add-to-cart UX most users expect.
+    // invalid value, matches the add-to-cart UX most users expect.
     public async Task<Cart> UpdateItemQuantityAsync(Guid cartId, Guid itemId, int quantity)
     {
         var item = await _context.CartItems.FirstOrDefaultAsync(ci => ci.Id == itemId);

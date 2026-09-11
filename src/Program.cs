@@ -87,9 +87,9 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
-// ── CORS (Milestone 2 §28 — never AllowAnyOrigin in production) ────
+// ── CORS (Milestone 2 §28, never AllowAnyOrigin in production) ────
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
-    ?? new[] { "http://localhost:5173" };
+    ?? new[] { "http://localhost:3000" };
 
 builder.Services.AddCors(options =>
 {
@@ -102,7 +102,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-// ── Rate limiting (Milestone 2 §17/§34 — brute-force mitigation on auth) ─
+// ── Rate limiting (Milestone 2 §17/§34, brute-force mitigation on auth) ─
 builder.Services.AddRateLimiter(options =>
 {
     options.AddFixedWindowLimiter("auth", opt =>
@@ -130,7 +130,7 @@ builder.Services.AddSwaggerGen(options =>
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Enter a JWT access token (no 'Bearer ' prefix needed — Swagger adds it)."
+        Description = "Enter a JWT access token (no 'Bearer ' prefix needed, Swagger adds it)."
     });
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
@@ -141,7 +141,7 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// ── Health checks (Milestone 2 §30 — includes DB connectivity) ─────
+// ── Health checks (Milestone 2 §30, includes DB connectivity) ─────
 builder.Services.AddHealthChecks()
     .AddNpgSql(connectionString, name: "postgresql");
 

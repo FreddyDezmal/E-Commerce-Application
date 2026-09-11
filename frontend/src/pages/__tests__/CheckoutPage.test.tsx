@@ -85,7 +85,7 @@ describe('CheckoutPage', () => {
 
     const button = screen.getByText('Place order');
     await userEvent.click(button);
-    // Second click while the first request is still in flight — the button
+    // Second click while the first request is still in flight, the button
     // is now disabled and showing "Placing order…", so this must be a no-op.
     await userEvent.click(screen.getByText('Placing order…'));
 

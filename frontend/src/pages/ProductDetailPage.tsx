@@ -57,6 +57,9 @@ export function ProductDetailPage() {
 
   return (
     <article className="product-detail">
+      <span className="product-detail__image" aria-hidden="true">
+        {product.name.charAt(0).toUpperCase()}
+      </span>
       <div className="product-detail__info">
         <h1>{product.name}</h1>
         <p className="product-detail__price">R{product.price.toFixed(2)}</p>

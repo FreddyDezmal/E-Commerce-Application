@@ -25,7 +25,7 @@ export interface AuthResult {
 /**
  * Business logic for registration/login. Deliberately has no dependency on
  * Express request/response objects (Milestone 2 §4) and depends only on
- * the IUserRepository interface, not a concrete Prisma-backed class — so
+ * the IUserRepository interface, not a concrete Prisma-backed class, so
  * it can be fully unit-tested with a mocked repository (Milestone 2 §23).
  */
 export class AuthService {
@@ -60,7 +60,7 @@ export class AuthService {
 
     const user = await this.userRepository.findByEmail(parsed.data.email);
     // Deliberately identical error/message for "no such user" and "wrong
-    // password" (Milestone 2 §13) — do not let a client enumerate emails.
+    // password" (Milestone 2 §13), do not let a client enumerate emails.
     if (!user) {
       throw new UnauthorizedError('Invalid email or password');
     }

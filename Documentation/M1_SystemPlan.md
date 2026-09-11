@@ -1,132 +1,146 @@
 ## Members:
+
 ### 1. Phokwane Mapadimeng
+
 ### 2. Emmanuel Teodor Booysen Joao
+
 ### 3. Omphile Moche
+
 ### 4. Mohau Mokoena
 
 # Milestone 1: System Plan
+
 ### E-Commerce Web Application
 
 ## 1. Executive Summary
- 
+
 This document is the System Plan for a full-stack e-commerce web application built for our SEN371. It produces the blueprint for the architecture, technology stack, database design, API contract, security model, UI/UX strategy, testing strategy, version control workflow, and deployment plan that will govern Milestones 2 till 6.
- 
+
 The recommended stack is **React (frontend) + Node.js/Express (backend) + PostgreSQL (database)**, structured around **MVC with a Service and Repository layer**, secured with **JWT-based authentication**, developed using **Agile/Scrum with Test-Driven Development**, and deployed via **GitHub Actions CI/CD** to **Vercel/Netlify (frontend)** and **Render/Railway (backend + managed Postgres)**.
- 
+
 No implementation begins in this milestone. Every decision below is justified, scoped to what our 4 people student team is able to realistically deliver across 3 weeks, and traceable from Requirement to Architecture to API then Database then UI to Test and finally Deployment.
 
 ## 2. System Overview
 
 **What the system does:** A web-based storefront where customers browse a product catalog, manage a shopping cart, and place orders, while administrators manage products, categories, and order fulfillment.
- 
+
 **Users:**
+
 - **Customer (guest/registered):** browses and purchases products.
 - **Administrator:** manages catalog and order lifecycle.
 - **Business problem solved:** Provides a minimal but complete online retail workflow; discovery, cart, checkout, order tracking. Showing a real e-commerce transaction lifecycle rather than a generic CRUD demo.
- 
+
 **Major capabilities:** authentication & authorization, product catalog with search/filter, cart management, order placement and history, and an admin back-office for catalog/order management.
- 
+
 **System boundary:** The system owns product, user, cart, and order data. It does **not** integrate a real payment gateway. Checkout produces an order record with a simulated payment status. It does not include shipping-carrier integration, email delivery infrastructure beyond a stub, or multi-tenant/marketplace features.
- 
+
 **High-level technical architecture:** A single-page React frontend consumes a REST API exposed by an Express backend structured in MVC (Controllers, Services, Repositories then Models), backed by PostgreSQL, with JWT-based stateless authentication and role-based authorization for admin routes.
 
 ## 3. Requirements Analysis
- 
+
 ### 3.1 Explicit Requirements
+
 Agile process, TDD, MVC architecture, full-stack app, REST API, database persistence, authentication/security, responsive UI, automated testing, Git/GitHub collaboration, CI/CD principles, production-oriented deployment.
- 
+
 ### 3.2 Implicit Requirements
+
 - Passwords must never be stored in plaintext
 - The system must distinguish authenticated vs. unauthenticated access
 - Data must remain consistent across cart till order transitions
 - The API must be independently testable from the UI
+
 ### 3.3 Ambiguities Identified
-| # | Ambiguity | Resolution Approach |
-|---|---|---|
-| A1 | Brief permits SQL Server, PostgreSQL, or MongoDB. No single mandate | Select one via ADR, justified by relational integrity needs of orders/cart |
-| A2 | Backend permits Node/Express or ASP.NET | Select Node/Express for stack cohesion |
-| A3 | "GitHub Pages for frontend where appropriate;" React SPAs with client-side routing have known GH Pages limitations | Will be addressed explicitly in Deployment |
-| A4 | Payment processing not specified | Assumed simulated/mock payment |
-| A5 | Real-time features not mentioned | Assumed out of scope since there's no requirement basis |
- 
+
+| #   | Ambiguity                                                                                                          | Resolution Approach                                                        |
+| --- | ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| A1  | Brief permits SQL Server, PostgreSQL, or MongoDB. No single mandate                                                | Select one via ADR, justified by relational integrity needs of orders/cart |
+| A2  | Backend permits Node/Express or ASP.NET                                                                            | Select Node/Express for stack cohesion                                     |
+| A3  | "GitHub Pages for frontend where appropriate;" React SPAs with client-side routing have known GH Pages limitations | Will be addressed explicitly in Deployment                                 |
+| A4  | Payment processing not specified                                                                                   | Assumed simulated/mock payment                                             |
+| A5  | Real-time features not mentioned                                                                                   | Assumed out of scope since there's no requirement basis                    |
+
 ### 3.4 Assumptions
-1. **No real payment gateway** – checkout is simulated (status: `pending` to `paid`) to avoid PCI scope.
-2. **Single currency, single locale** — no i18n/multi-currency requirement needed.
-3. **Two roles only** — `customer` and `admin`
+
+1. **No real payment gateway** to checkout is simulated (status: `pending` to `paid`) to avoid PCI scope.
+2. **Single currency, single locale**, no i18n/multi-currency requirement needed.
+3. **Two roles only**, `customer` and `admin`
 4. **Guest browsing allowed**, but cart persistence and checkout require authentication
-5. **Soft-delete for products** — admins "deactivate" rather than hard-delete, to preserve referential integrity with historical orders.
-6. **Email is out of scope for real delivery** — password reset / order confirmation emails are stubbed/logged, not sent via a live SMTP provider, unless we say otherwise?.
+5. **Soft-delete for products**, admins "deactivate" rather than hard-delete, to preserve referential integrity with historical orders.
+6. **Email is out of scope for real delivery**, password reset / order confirmation emails are stubbed/logged, not sent via a live SMTP provider, unless we say otherwise?.
+
 ### 3.5 Functional Requirements
- 
+
 MoSCoW: **M**ust, **S**hould, **C**ould, **W**on't
- 
-| ID | Description | Actor | Priority | Acceptance Criteria |
-|---|---|---|---|---|
-| T-01 | Register a new account | Customer | Must | Given valid email/password, account is created, password hashed, duplicate email rejected with 409 |
-| T-02 | Login | Customer/Admin | Must | Valid credentials return JWT; invalid returns 401 |
-| T-03 | Logout (client-side token discard) | Customer/Admin | Must | Token removed client-side; protected routes reject old token after expiry |
-| T-04 | Browse products | Customer | Must | GET /products returns paginated, active products only |
-| T-05 | Search products by name | Customer | Must | Query param filters results case-insensitively |
-| T-06 | Filter products by category/price | Customer | Should | Filters combine with AND logic |
-| T-07 | View product details | Customer | Must | GET /products/:id returns 404 for missing/inactive product |
-| T-08 | Add product to cart | Customer | Must | Authenticated only; quantity >=1; stock validated |
-| T-09 | Update cart item quantity | Customer | Must | Quantity 0 removes item; exceeds stock is 400 |
-| T-10 | Remove item from cart | Customer | Must | Item removed; cart total recalculated |
-| T-11 | Checkout (create order from cart) | Customer | Must | Cart must not br empty; stock validated; order created atomically then cart cleared |
-| T-12 | View order history | Customer | Must | Returns only the authenticated user's orders |
-| T-13 | View order details | Customer | Must | 403 if order belongs to another user |
-| T-14 | Manage profile (name, address) | Customer | Should | Updates persisted; email change requires re-verification (Could) |
-| T-15 | Admin login (same endpoint, role-checked) | Admin | Must | Role claim in JWT gates admin routes |
-| T-16 | Create product | Admin | Must | Validates required fields; 201 on success |
-| T-17 | Update product | Admin | Must | Partial update supported |
-| T-18 | Deactivate product | Admin | Must | Soft delete; hidden from customer catalog |
-| T-19 | Manage categories (CRUD) | Admin | Should | Category deletion blocked if products reference it |
-| T-20 | View all orders | Admin | Must | Paginated; filterable by status |
-| T-21 | Update order status | Admin | Must | Enforced state machine (Pending to Paid to Shipped then finally Delivered or cancelled) |
-| T-22 | View basic system info (order/user counts) | Admin | Could | Simple dashboard metrics, not full analytics |
- 
+
+| ID   | Description                                | Actor          | Priority | Acceptance Criteria                                                                                |
+| ---- | ------------------------------------------ | -------------- | -------- | -------------------------------------------------------------------------------------------------- |
+| T-01 | Register a new account                     | Customer       | Must     | Given valid email/password, account is created, password hashed, duplicate email rejected with 409 |
+| T-02 | Login                                      | Customer/Admin | Must     | Valid credentials return JWT; invalid returns 401                                                  |
+| T-03 | Logout (client-side token discard)         | Customer/Admin | Must     | Token removed client-side; protected routes reject old token after expiry                          |
+| T-04 | Browse products                            | Customer       | Must     | GET /products returns paginated, active products only                                              |
+| T-05 | Search products by name                    | Customer       | Must     | Query param filters results case-insensitively                                                     |
+| T-06 | Filter products by category/price          | Customer       | Should   | Filters combine with AND logic                                                                     |
+| T-07 | View product details                       | Customer       | Must     | GET /products/:id returns 404 for missing/inactive product                                         |
+| T-08 | Add product to cart                        | Customer       | Must     | Authenticated only; quantity >=1; stock validated                                                  |
+| T-09 | Update cart item quantity                  | Customer       | Must     | Quantity 0 removes item; exceeds stock is 400                                                      |
+| T-10 | Remove item from cart                      | Customer       | Must     | Item removed; cart total recalculated                                                              |
+| T-11 | Checkout (create order from cart)          | Customer       | Must     | Cart must not br empty; stock validated; order created atomically then cart cleared                |
+| T-12 | View order history                         | Customer       | Must     | Returns only the authenticated user's orders                                                       |
+| T-13 | View order details                         | Customer       | Must     | 403 if order belongs to another user                                                               |
+| T-14 | Manage profile (name, address)             | Customer       | Should   | Updates persisted; email change requires re-verification (Could)                                   |
+| T-15 | Admin login (same endpoint, role-checked)  | Admin          | Must     | Role claim in JWT gates admin routes                                                               |
+| T-16 | Create product                             | Admin          | Must     | Validates required fields; 201 on success                                                          |
+| T-17 | Update product                             | Admin          | Must     | Partial update supported                                                                           |
+| T-18 | Deactivate product                         | Admin          | Must     | Soft delete; hidden from customer catalog                                                          |
+| T-19 | Manage categories (CRUD)                   | Admin          | Should   | Category deletion blocked if products reference it                                                 |
+| T-20 | View all orders                            | Admin          | Must     | Paginated; filterable by status                                                                    |
+| T-21 | Update order status                        | Admin          | Must     | Enforced state machine (Pending to Paid to Shipped then finally Delivered or cancelled)            |
+| T-22 | View basic system info (order/user counts) | Admin          | Could    | Simple dashboard metrics, not full analytics                                                       |
+
 ### 3.6 Won't Have
-Multi-seller marketplace, live payment gateway, real-time stock websockets, product reviews/ratings, wishlist, coupon/discount engine, recommendation engine. These are  excluded because adding them would inflate the scope
+
+Multi-seller marketplace, live payment gateway, real-time stock websockets, product reviews/ratings, wishlist, coupon/discount engine, recommendation engine. These are excluded because adding them would inflate the scope
 
 ## 4. Non-Functional Requirements
- 
-| Category | Requirement |
-|---|---|
-| **Performance** | Typical API responses should complete within ~300ms under normal development-test load |
-| **Security** | Passwords hashed with bcrypt; JWT signed with HS256 and a secret stored in environment variables; all admin routes enforce role-based authorization server-side |
-| **Availability** | Target 95%+ uptime during the grading/demo window |
-| **Scalability** | Stateless backend (JWT, no server-side session) allows horizontal scaling behind a load balancer if needed; not required to be load-tested at academic scale, but the design must not architecturally prevent it. |
-| **Maintainability** | Layered architecture (Controller/Service/Repository) with ESLint + consistent style enforced in CI; each module has a single responsibility. |
-| **Usability** | Core flows (Browse then Cart then Checkout) completable in <=5 clicks from homepage; form validation gives inline, specific error messages. |
-| **Accessibility** | Semantic HTML, keyboard-navigable forms, sufficient colour contrast |
-| **Compatibility** | Responsive design tested at 3 breakpoints (mobile <=480px, tablet <=768px, desktop >=1024px); latest two versions of Chrome, Firefox, Edge. |
-| **Reliability** | Checkout must be atomic, so either the full order (with items) is created and stock decremented, or nothing is (DB transaction). |
-| **Testability** | All business logic isolated in Service layer, unit-testable without HTTP or DB. |
- 
+
+| Category            | Requirement                                                                                                                                                                                                       |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Performance**     | Typical API responses should complete within ~300ms under normal development-test load                                                                                                                            |
+| **Security**        | Passwords hashed with bcrypt; JWT signed with HS256 and a secret stored in environment variables; all admin routes enforce role-based authorization server-side                                                   |
+| **Availability**    | Target 95%+ uptime during the grading/demo window                                                                                                                                                                 |
+| **Scalability**     | Stateless backend (JWT, no server-side session) allows horizontal scaling behind a load balancer if needed; not required to be load-tested at academic scale, but the design must not architecturally prevent it. |
+| **Maintainability** | Layered architecture (Controller/Service/Repository) with ESLint + consistent style enforced in CI; each module has a single responsibility.                                                                      |
+| **Usability**       | Core flows (Browse then Cart then Checkout) completable in <=5 clicks from homepage; form validation gives inline, specific error messages.                                                                       |
+| **Accessibility**   | Semantic HTML, keyboard-navigable forms, sufficient colour contrast                                                                                                                                               |
+| **Compatibility**   | Responsive design tested at 3 breakpoints (mobile <=480px, tablet <=768px, desktop >=1024px); latest two versions of Chrome, Firefox, Edge.                                                                       |
+| **Reliability**     | Checkout must be atomic, so either the full order (with items) is created and stock decremented, or nothing is (DB transaction).                                                                                  |
+| **Testability**     | All business logic isolated in Service layer, unit-testable without HTTP or DB.                                                                                                                                   |
+
 Unrealistic enterprise SLAs are avoided on purpose since they aren't achievable more meaningful on student-free infrastructure and would not be honestly demonstratable
 
 ## 5. Agile SDLC Model
- 
+
 **Why Agile:** Agile's iterative feedback loop suits this better than Waterfall's up-front, unchangeable spec
- 
-**Why not Waterfall:** Waterfall assumes requirements are fully known and stable before design, and defers testing to the end. This project explicitly requires TDD (testing *drives* development, not the reverse). A single long Waterfall phase would also make grading progress per milestone impossible to demonstrate incrementally.
- 
+
+**Why not Waterfall:** Waterfall assumes requirements are fully known and stable before design, and defers testing to the end. This project explicitly requires TDD (testing _drives_ development, not the reverse). A single long Waterfall phase would also make grading progress per milestone impossible to demonstrate incrementally.
+
 **Sprint structure (suggested, 2-week sprints mapped to milestones):**
+
 - Sprint 0 (this milestone): planning, architecture, no code.
-- Sprint 1–2 (Milestone 2): backend models, repositories, services, auth (TDD from day one).
+- Sprint 1to2 (Milestone 2): backend models, repositories, services, auth (TDD from day one).
 - Sprint 3 (Milestone 3): API integration, controller wiring, Postman/integration tests.
-- Sprint 4–5 (Milestone 4): frontend build against the real API.
+- Sprint 4to5 (Milestone 4): frontend build against the real API.
 - Sprint 6 (Milestone 5): test hardening, E2E, bug fixes.
 - Sprint 7 (Milestone 6): deployment, CI/CD finalization, demo prep.
-**Feedback loop:** each sprint ends with a short internal review; backlog re-prioritized (MoSCoW) if scope pressure appears.
- 
-Plan → Design → Build (TDD) → Test → Review → Retro → back to Plan
+  **Feedback loop:** each sprint ends with a short internal review; backlog re-prioritized (MoSCoW) if scope pressure appears.
+
+Plan - Design - Build (TDD) - Test - Review - Retro - back to Plan
 
 ## 6\. Design Patterns Choice
 
-The application follows the confirmed layered architecture: Controller → Service → Repository → Model, an extension of MVC. Within that architecture, the following supporting design patterns keep the codebase maintainable, testable, and loosely coupled.
+The application follows the confirmed layered architecture: Controller - Service - Repository - Model, an extension of MVC. Within that architecture, the following supporting design patterns keep the codebase maintainable, testable, and loosely coupled.
 
-### 6.1 Layered Architecture: Controller → Service → Repository → Model
+### 6.1 Layered Architecture: Controller - Service - Repository - Model
 
 Controllers handle HTTP concerns only (parsing requests, returning responses). Services hold business rules (e.g. "cart must not be empty at checkout", "stock must be validated before an order is created"). Repositories are the only layer that talks to PostgreSQL, isolating SQL/query logic. Models represent the shape of the data.
 
@@ -144,7 +158,7 @@ Used for the PostgreSQL connection/pool, ensuring only one connection pool insta
 
 ### 6.3 Factory Pattern
 
-Used to create objects that vary by type at runtime, such as order-status transition handlers (pending → paid → shipped → delivered/cancelled) or notification types (e.g. stubbed order-confirmation logs vs future email delivery).
+Used to create objects that vary by type at runtime, such as order-status transition handlers (pending - paid - shipped - delivered/cancelled) or notification types (e.g. stubbed order-confirmation logs vs future email delivery).
 
 - New status transitions or notification types can be added without changing existing calling code (Open/Closed Principle).
 - Keeps object-creation logic in one place instead of scattered conditional checks.
@@ -204,15 +218,15 @@ Feature branches are merged into develop using squash merges to keep history rea
 
 ## 8\. Database Design Schema
 
-The team has confirmed PostgreSQL, a relational database, as the primary data store. E-commerce data (users, orders, payments, inventory) is highly structured and benefits from PostgreSQL's relational integrity, foreign key constraints, and transaction support (ACID compliance) — particularly important for order and payment consistency. It integrates cleanly with the confirmed Node.js/Express backend via an ORM such as Prisma or Sequelize, and pairs naturally with JWT-based authentication (the users table stores the password hash and role used to issue and validate tokens).
+The team has confirmed PostgreSQL, a relational database, as the primary data store. E-commerce data (users, orders, payments, inventory) is highly structured and benefits from PostgreSQL's relational integrity, foreign key constraints, and transaction support (ACID compliance), particularly important for order and payment consistency. It integrates cleanly with the confirmed Node.js/Express backend via an ORM such as Prisma or Sequelize, and pairs naturally with JWT-based authentication (the users table stores the password hash and role used to issue and validate tokens).
 
 **Scope notes, aligned to the confirmed System Plan:**
 
 - No payment gateway is integrated (checkout is simulated per assumption A4), so payment status lives as a field on orders rather than a separate payments table.
 - Product reviews/ratings are explicitly out of scope ("Won't Have" list), so no reviews table is included.
 - Products are soft-deleted (is_active flag) rather than hard-deleted, per the admin "deactivate product" requirement (T-18), to preserve referential integrity with historical orders.
-- Order status follows the enforced state machine from requirement T-21: pending → paid → shipped → delivered, or cancelled.
-- Gap to flag with the team: functional requirements T-08–T-11 describe persistent cart add/update/remove operations, but the confirmed API endpoint list (auth, users, products, orders) has no /api/cart routes yet. The schema below still includes cart / cart_items to support this — worth confirming with whoever owns API Design before Milestone 3.
+- Order status follows the enforced state machine from requirement T-21: pending - paid - shipped - delivered, or cancelled.
+- Gap to flag with the team: functional requirements T-08toT-11 describe persistent cart add/update/remove operations, but the confirmed API endpoint list (auth, users, products, orders) has no /api/cart routes yet. The schema below still includes cart / cart_items to support this, worth confirming with whoever owns API Design before Milestone 3.
 
 ### 8.1 Entity-Relationship Diagram
 
@@ -293,20 +307,20 @@ To support the ~300ms typical response time target under the Performance NFR, th
 
 ### orders / order_items
 
-| **Field**               | **Type**      | **Constraints**                                                                                |
-| ----------------------- | ------------- | ---------------------------------------------------------------------------------------------- |
-| order_id                | UUID / SERIAL | Primary Key (orders)                                                                           |
-| user_id                 | UUID / INT    | Foreign Key -> users.user_id (indexed) (orders)                                                |
-| address_id              | UUID / INT    | Foreign Key -> addresses.address_id (orders)                                                   |
-| status                  | VARCHAR(20)   | NOT NULL, DEFAULT 'pending' — CHECK IN (pending, paid, shipped, delivered, cancelled) (orders) |
-| payment_status          | VARCHAR(20)   | NOT NULL, DEFAULT 'pending' — simulated, no live gateway (orders)                              |
-| total_amount            | DECIMAL(10,2) | NOT NULL (orders)                                                                              |
-| created_at / updated_at | TIMESTAMP     | NOT NULL, DEFAULT now() (orders)                                                               |
-| order_item_id           | UUID / SERIAL | Primary Key (order_items)                                                                      |
-| order_id                | UUID / INT    | Foreign Key -> orders.order_id (order_items)                                                   |
-| product_id              | UUID / INT    | Foreign Key -> products.product_id (order_items)                                               |
-| quantity                | INT           | NOT NULL (order_items)                                                                         |
-| unit_price              | DECIMAL(10,2) | NOT NULL — price snapshot at purchase time (order_items)                                       |
+| **Field**               | **Type**      | **Constraints**                                                                               |
+| ----------------------- | ------------- | --------------------------------------------------------------------------------------------- |
+| order_id                | UUID / SERIAL | Primary Key (orders)                                                                          |
+| user_id                 | UUID / INT    | Foreign Key -> users.user_id (indexed) (orders)                                               |
+| address_id              | UUID / INT    | Foreign Key -> addresses.address_id (orders)                                                  |
+| status                  | VARCHAR(20)   | NOT NULL, DEFAULT 'pending', CHECK IN (pending, paid, shipped, delivered, cancelled) (orders) |
+| payment_status          | VARCHAR(20)   | NOT NULL, DEFAULT 'pending', simulated, no live gateway (orders)                              |
+| total_amount            | DECIMAL(10,2) | NOT NULL (orders)                                                                             |
+| created_at / updated_at | TIMESTAMP     | NOT NULL, DEFAULT now() (orders)                                                              |
+| order_item_id           | UUID / SERIAL | Primary Key (order_items)                                                                     |
+| order_id                | UUID / INT    | Foreign Key -> orders.order_id (order_items)                                                  |
+| product_id              | UUID / INT    | Foreign Key -> products.product_id (order_items)                                              |
+| quantity                | INT           | NOT NULL (order_items)                                                                        |
+| unit_price              | DECIMAL(10,2) | NOT NULL, price snapshot at purchase time (order_items)                                       |
 
 ## 9. Backend & Frontend Framework Justification
 
@@ -337,7 +351,7 @@ The backend will follow the project's layered architecture based on MVC principl
 
 The planned backend flow is:
 
-Routes → Controllers → Services → Repositories → PostgreSQL Database
+Routes - Controllers - Services - Repositories - PostgreSQL Database
 
 This separation allows business logic to be isolated within the Service layer and database operations to be managed through the Repository layer. As a result, the application can be tested and maintained more easily as the system grows.
 
@@ -375,11 +389,11 @@ The system follows a full-stack architecture consisting of a frontend applicatio
 
 The general flow of the system is:
 
-**User → Frontend → Backend API → Database**
+**User - Frontend - Backend API - Database**
 
 For protected operations:
 
-**User → Frontend → Backend API → JWT Authentication → Database**
+**User - Frontend - Backend API - JWT Authentication - Database**
 
 The frontend sends HTTP requests to the backend API. The backend validates the request, applies the required business logic, and communicates with the database when data needs to be retrieved or modified. The API then returns the appropriate response to the frontend.
 
@@ -417,65 +431,70 @@ The frontend sends HTTP requests to the backend API. The backend validates the r
 ```
 
 ## 11. API Design
- 
+
 All endpoints prefixed `/api`. Auth = `none | user | admin`.
- 
-| Method | Endpoint | Purpose | Auth | Request Body | Success | Errors |
-|---|---|---|---|---|---|---|
-| POST | /auth/register | Create account | none | `{email, password, fullName}` | 201 `{user, token}` | 400, 409 |
-| POST | /auth/login | Authenticate | none | `{email, password}` | 200 `{user, token}` | 401 |
-| GET | /products | List/search/filter (paginated) | none | query: `?search=&category=&page=&limit=` | 200 `{items, total, page}` | 400 |
-| GET | /products/:id | Product detail | none | — | 200 product | 404 |
-| POST | /products | Create product | admin | `{name, price, stock, categoryId, description}` | 201 product | 400, 401, 403 |
-| PUT | /products/:id | Update product | admin | partial product fields | 200 product | 400, 401, 403, 404 |
-| DELETE | /products/:id | Deactivate product | admin | — | 204 | 401, 403, 404 |
-| GET | /categories | List categories | none | — | 200 array | — |
-| POST | /categories | Create category | admin | `{name}` | 201 | 400, 401, 403, 409 |
-| GET | /cart | Get current user's cart | user | — | 200 cart+items | 401 |
-| POST | /cart/items | Add item to cart | user | `{productId, quantity}` | 201 cart | 400, 401, 404 |
-| PUT | /cart/items/:id | Update quantity | user | `{quantity}` | 200 cart | 400, 401, 404 |
-| DELETE | /cart/items/:id | Remove item | user | — | 204 | 401, 404 |
-| POST | /orders | Checkout (cart → order) | user | `{shippingAddressId}` | 201 order | 400 (empty cart/out of stock), 401 |
-| GET | /orders | List own orders (customer) / all orders (admin, `?userId=`) | user/admin | — | 200 paginated | 401 |
-| GET | /orders/:id | Order detail | user/admin | — | 200 order | 401, 403, 404 |
-| PUT | /orders/:id/status | Update order status | admin | `{status}` | 200 order | 400 (invalid transition), 401, 403, 404 |
-| GET | /users/me | Current profile | user | — | 200 user | 401 |
-| PUT | /users/me | Update profile | user | `{fullName, ...}` | 200 user | 400, 401 |
- 
-REST conventions followed: nouns for resources, plural collection names, HTTP verbs carry the action, status codes are semantically correct (201 for creation, 204 for deletion with no body, 403 vs 401 distinguished — see §12).
- 
+
+| Method | Endpoint           | Purpose                                                     | Auth       | Request Body                                    | Success                    | Errors                                  |
+| ------ | ------------------ | ----------------------------------------------------------- | ---------- | ----------------------------------------------- | -------------------------- | --------------------------------------- |
+| POST   | /auth/register     | Create account                                              | none       | `{email, password, fullName}`                   | 201 `{user, token}`        | 400, 409                                |
+| POST   | /auth/login        | Authenticate                                                | none       | `{email, password}`                             | 200 `{user, token}`        | 401                                     |
+| GET    | /products          | List/search/filter (paginated)                              | none       | query: `?search=&category=&page=&limit=`        | 200 `{items, total, page}` | 400                                     |
+| GET    | /products/:id      | Product detail                                              | none       | ,                                               | 200 product                | 404                                     |
+| POST   | /products          | Create product                                              | admin      | `{name, price, stock, categoryId, description}` | 201 product                | 400, 401, 403                           |
+| PUT    | /products/:id      | Update product                                              | admin      | partial product fields                          | 200 product                | 400, 401, 403, 404                      |
+| DELETE | /products/:id      | Deactivate product                                          | admin      | ,                                               | 204                        | 401, 403, 404                           |
+| GET    | /categories        | List categories                                             | none       | ,                                               | 200 array                  | ,                                       |
+| POST   | /categories        | Create category                                             | admin      | `{name}`                                        | 201                        | 400, 401, 403, 409                      |
+| GET    | /cart              | Get current user's cart                                     | user       | ,                                               | 200 cart+items             | 401                                     |
+| POST   | /cart/items        | Add item to cart                                            | user       | `{productId, quantity}`                         | 201 cart                   | 400, 401, 404                           |
+| PUT    | /cart/items/:id    | Update quantity                                             | user       | `{quantity}`                                    | 200 cart                   | 400, 401, 404                           |
+| DELETE | /cart/items/:id    | Remove item                                                 | user       | ,                                               | 204                        | 401, 404                                |
+| POST   | /orders            | Checkout (cart - order)                                     | user       | `{shippingAddressId}`                           | 201 order                  | 400 (empty cart/out of stock), 401      |
+| GET    | /orders            | List own orders (customer) / all orders (admin, `?userId=`) | user/admin | ,                                               | 200 paginated              | 401                                     |
+| GET    | /orders/:id        | Order detail                                                | user/admin | ,                                               | 200 order                  | 401, 403, 404                           |
+| PUT    | /orders/:id/status | Update order status                                         | admin      | `{status}`                                      | 200 order                  | 400 (invalid transition), 401, 403, 404 |
+| GET    | /users/me          | Current profile                                             | user       | ,                                               | 200 user                   | 401                                     |
+| PUT    | /users/me          | Update profile                                              | user       | `{fullName, ...}`                               | 200 user                   | 400, 401                                |
+
+REST conventions followed: nouns for resources, plural collection names, HTTP verbs carry the action, status codes are semantically correct (201 for creation, 204 for deletion with no body, 403 vs 401 distinguished, see §12).
+
 ## 12. JWT Security Design
- 
-**Registration:** password validated (min length/complexity), hashed with bcrypt before storage — plaintext password is never persisted or logged.
- 
+
+**Registration:** password validated (min length/complexity), hashed with bcrypt before storage, plaintext password is never persisted or logged.
+
 **Login:** email looked up, bcrypt compare against `password_hash`; on success, a JWT is issued.
- 
+
 **JWT payload (minimal, non-sensitive):**
+
 ```json
 { "sub": "<user-id>", "role": "customer", "iat": ..., "exp": ... }
 ```
+
 The payload **must not** contain the password hash, email (avoid unnecessary PII in a client-readable token), or any data that changes frequently (JWT can't be updated without reissue). Email/name are fetched via `/users/me` when needed, not decoded from the token.
- 
-**Token expiration:** short-lived access token (e.g., 60 minutes). A refresh-token pattern is a **Should**, not a **Must**, given team scope — documented as a known trade-off (§9) rather than implemented without justification.
- 
-**Protected routes:** `authenticate` middleware verifies signature + expiry, attaches `req.user = {id, role}`. Missing/invalid token → 401.
- 
-**Role-based authorization:** a second `requireRole('admin')` middleware runs after `authenticate` for admin-only routes → 403 if role mismatch (distinguished from 401 "not authenticated" vs 403 "authenticated but not permitted" — a common and important distinction the plan enforces explicitly).
- 
+
+**Token expiration:** short-lived access token (e.g., 60 minutes). A refresh-token pattern is a **Should**, not a **Must**, given team scope, documented as a known trade-off (§9) rather than implemented without justification.
+
+**Protected routes:** `authenticate` middleware verifies signature + expiry, attaches `req.user = {id, role}`. Missing/invalid token - 401.
+
+**Role-based authorization:** a second `requireRole('admin')` middleware runs after `authenticate` for admin-only routes - 403 if role mismatch (distinguished from 401 "not authenticated" vs 403 "authenticated but not permitted", a common and important distinction the plan enforces explicitly).
+
 **Authentication vs. Authorization (explicitly distinguished):**
-- **Authentication** = "who are you" — verified once at login, re-verified per request via JWT signature check.
-- **Authorization** = "what are you allowed to do" — checked per-route via role middleware, and per-resource in the Service layer (e.g., a customer can only fetch *their own* order — checked by comparing `order.user_id` to `req.user.id`, not just role).
-**Input validation:** all request bodies validated (e.g., via `zod` or `express-validator`) before reaching the Service layer — rejects malformed input with 400 before any DB call.
- 
+
+- **Authentication** = "who are you", verified once at login, re-verified per request via JWT signature check.
+- **Authorization** = "what are you allowed to do", checked per-route via role middleware, and per-resource in the Service layer (e.g., a customer can only fetch _their own_ order, checked by comparing `order.user_id` to `req.user.id`, not just role).
+  **Input validation:** all request bodies validated (e.g., via `zod` or `express-validator`) before reaching the Service layer, rejects malformed input with 400 before any DB call.
+
 **Rate limiting:** `express-rate-limit` applied to `/auth/login` and `/auth/register` specifically (brute-force mitigation), not globally (would harm legitimate browsing).
- 
+
 **CORS:** restricted to the deployed frontend origin only, not `*`.
- 
-**Secure transport:** HTTPS enforced at the hosting layer (Render/Vercel provide this by default) — the app assumes it never runs auth over plain HTTP in any deployed environment.
- 
-**Secrets management:** JWT secret, DB connection string, and any future API keys live in environment variables (`.env`, excluded via `.gitignore`), injected via the hosting provider's secret store in production — never committed to Git.
- ## 13. UI/UX Design – Wireframes and Figma
- 13.1 UI/UX Approach
+
+**Secure transport:** HTTPS enforced at the hosting layer (Render/Vercel provide this by default), the app assumes it never runs auth over plain HTTP in any deployed environment.
+
+**Secrets management:** JWT secret, DB connection string, and any future API keys live in environment variables (`.env`, excluded via `.gitignore`), injected via the hosting provider's secret store in production, never committed to Git.
+
+## 13. UI/UX Design to Wireframes and Figma
+
+13.1 UI/UX Approach
 
 The e-commerce platform will feature a responsive and customer-oriented interface catering for the needs of both the customers and administrators. The interface design will be initiated via low-fidelity wireframes which will be turned into an interactive high-fidelity design in Figma.
 
@@ -485,72 +504,74 @@ The Figma design will serve as a model for the implementation of the front-end i
 
 The main customer steps in the application are as follows:
 
-Home → Products → Product Details → Cart → Checkout → Confirmation of the order → Order history
+Home - Products - Product Details - Cart - Checkout - Confirmation of the order - Order history
 
 The main administrator steps in the application are as follows:
 
-Login → Admin Dashboard → Product Management / Order management
+Login - Admin Dashboard - Product Management / Order management
 
 13.2 Customer screens
 
 The Figma design will comprise the following customer’s screens:
-screen	Main feature
+screen Main feature
 Home
-	Navigation, search, featured products and categories
-Products	Product catalogue, search and filters
-Product details	Product information, price, stock and Add to Cart
-Login	Email, password and authentication
-Register	Customer registration form
+Navigation, search, featured products and categories
+Products Product catalogue, search and filters
+Product details Product information, price, stock and Add to Cart
+Login Email, password and authentication
+Register Customer registration form
 
-Cart	Products, quantities, totals and checkout
-Checkout	Delivery information and order summary
-Order Confirmation	Order number, total and status
-Order History	Previous orders and statuses
-profile	Customer information and address
+Cart Products, quantities, totals and checkout
+Checkout Delivery information and order summary
+Order Confirmation Order number, total and status
+Order History Previous orders and statuses
+profile Customer information and address
 
 13.3 Administrator Screens
 
 The administrator interface will include:
-Screen	Main features
-Admin Dashboard	Product, user and order overview
-Product Management 	Add edit and deactivate products
-Order Management 	View orders and update order status
+Screen Main features
+Admin Dashboard Product, user and order overview
+Product Management Add edit and deactivate products
+Order Management View orders and update order status
 
 The features for administrators will be provided only to the users who have the administrator role, using the JWT-based authorisation mechanism.
 
-13.4 Responsive Design  
+13.4 Responsive Design
 
 The interface will be tailored for the following:
 
 Mobile: ≤480px
-Tablet: 481–768px
+Tablet: 481to768px
 Desktop: ≥1024px
 
 The design will adjust to smaller screen types through the resizing of product cards, changing navigation, changing forms, and ensuring that important controls are clickable.
 
 The design will implement basic accessibility principles: readable text, clear button name, good contrast, semantic structure, and keyboard-friendly forms.
 
-13.5 Figma Prototype  
+13.5 Figma Prototype
 
 The creation of a high-fidelity prototype in Figma allows demonstrating the basic workflow of the customer and administrator before the development begins.
 
 The prototype will include the same:
 
-•	Colour scheme
-•	Typography
-•	Navigation
-•	Button style
-•	Product card design
-•	Forms design
+• Colour scheme
+• Typography
+• Navigation
+• Button style
+• Product card design
+• Forms design
 
-The prototype will be composed of the clickable links between the main screens showing the planned navigation and the user experience. 
+The prototype will be composed of the clickable links between the main screens showing the planned navigation and the user experience.
 
 Figma Prototype: https://www.figma.com/design/gL6RvlEqfEkbT0fERdN6dg/SEN371-E-Commerce-Application?node-id=0-1&t=LtFF0NUzjSewxwmY-1
-## 14. Testing Plan
-14. Testing Plan
-14.1 Testing Strategy
 
-Testing will be conducted continuously during the development phase and not just at the end of the project. The Test-Driven Development framework will be employed. 
+## 14. Testing Plan
+
+14. Testing Plan
+    14.1 Testing Strategy
+
+Testing will be conducted continuously during the development phase and not just at the end of the project. The Test-Driven Development framework will be employed.
 
 The tests in the system will include functional testing for the backend, REST API, database, and front end system.
 
@@ -574,21 +595,21 @@ JWT authentication and role-based authorization will also be tested to ensure no
 
 End-to-End Testing
 
-The final tier of testing will check entire user processes of Registration → Login → Browsing products → Adding products to shopping cart → Payment and Order/Administrator process of Logging in → Admin dashboard view → manage products → manage Orders
+The final tier of testing will check entire user processes of Registration - Login - Browsing products - Adding products to shopping cart - Payment and Order/Administrator process of Logging in - Admin dashboard view - manage products - manage Orders
 14.3 Planned Test Cases
-ID	Test	Expected Result
-TC01	Register with valid details	Account created
-TC02	Register using existing email	Registration rejected
-TC03	Login with valid credentials	JWT returned
-TC04	Login with invalid credentials	Access denied
-TC05	Access protected endpoint without JWT	401 response
-TC06	Customer accesses admin endpoint	403 response
-TC07	Retrieve products	Products returned
-TC08	Add product to cart	Product added
-TC09	Checkout with valid cart	Order created
-TC10	Checkout with empty cart	Request rejected
-TC11	Admin creates product	Product created
-TC12	Admin updates order status	Status updated
+ID Test Expected Result
+TC01 Register with valid details Account created
+TC02 Register using existing email Registration rejected
+TC03 Login with valid credentials JWT returned
+TC04 Login with invalid credentials Access denied
+TC05 Access protected endpoint without JWT 401 response
+TC06 Customer accesses admin endpoint 403 response
+TC07 Retrieve products Products returned
+TC08 Add product to cart Product added
+TC09 Checkout with valid cart Order created
+TC10 Checkout with empty cart Request rejected
+TC11 Admin creates product Product created
+TC12 Admin updates order status Status updated
 
 14.4 Testing Criterion of success
 
@@ -597,15 +618,16 @@ Testing will be classified to be successful if key automated tests pass along wi
 The application will also be tested on supported desktop, tablet, and mobile screens as well as on recent browsers.
 
 ## 15. Deployment Plan
+
 15.1 Deployment Architecture
 
 The intended production environment will consist of:
 
-React Frontend 
+React Frontend
 
-→ Node.js/Express REST API
+- Node.js/Express REST API
 
-→ PostgreSQL Database
+- PostgreSQL Database
 
 The ultimate hosting service providers remain undefined. The team will choose the hosting option by analyzing its compatibility, reliability, cost, integration with GitHub and its support of HTTPS and environment variables.
 
@@ -623,29 +645,26 @@ The sensitive configurations shall not be pushed to GitHub.
 
 Environment variables shall be used for the following values:
 
-•	DATABASE_URL
-•	JWT_SECRET
-•	API_URL
+• DATABASE_URL
+• JWT_SECRET
+• API_URL
 
-The application shall run through HTTPS and use JWT authentication and role-based access control for the resources that shall be accessed. 
+The application shall run through HTTPS and use JWT authentication and role-based access control for the resources that shall be accessed.
 
 15.4 Deployment Verification
 
 Before the system is deemed deployed, the team shall verify the following points:
 
-•	The frontend is loading.
-•	The frontend is connected with the backend.
-•	The backend is connected to PostgreSQL.
-•	The login and registration are done.
-•	The products are fetched.
-•	The cart and checkout process work.
-•	The orders are stored properly.
-•	The admin operations are protected.
-•	The application works across different browsers and sizes. 
+• The frontend is loading.
+• The frontend is connected with the backend.
+• The backend is connected to PostgreSQL.
+• The login and registration are done.
+• The products are fetched.
+• The cart and checkout process work.
+• The orders are stored properly.
+• The admin operations are protected.
+• The application works across different browsers and sizes.
 
 15.5 Deployment Success Criteria
 
 The deployment shall be considered successful when the frontend is available, the backend API is working, the database is connected, and the customer and admin operations are working in production mode.
-
-
-
