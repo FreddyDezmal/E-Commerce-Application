@@ -47,7 +47,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .WithOne(o => o.User)
             .HasForeignKey(o => o.UserId)
             // Orders must survive if a user record is ever removed from an
-            // admin tool — RESTRICT rather than Cascade, mirroring the
+            // admin tool, RESTRICT rather than Cascade, mirroring the
             // "order history must survive" principle applied to products.
             .OnDelete(DeleteBehavior.Restrict);
     }

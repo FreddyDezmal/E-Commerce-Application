@@ -6,6 +6,7 @@ node_modules/
 npm-debug.log*
 *.log
 prisma/dev.db
+vscode-pet/
 
 # .NET / C# (added for EF Core migration to Supabase)
 src/bin/

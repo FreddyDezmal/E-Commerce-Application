@@ -61,9 +61,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const register = useCallback(async (data: RegisterRequest) => {
-    // Milestone 3 §8: registration does not imply login unless the backend
-    // says so. It does here — AuthResponse includes a token — so we sign
-    // the user in immediately, matching what the API actually returns.
+    // Registration does not imply login unless the backend says so. 
+    // It does here so we sign the user in immediately, matching what the API actually returns.
     const result = await authApi.register(data);
     setToken(result.token);
     setUser(result.user);

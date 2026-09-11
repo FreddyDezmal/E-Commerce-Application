@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { orderApi } from '../api/orderApi';
 import { ApiError } from '../api/client';
 import { LoadingState } from '../components/LoadingState';
@@ -16,7 +16,7 @@ export function OrderDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   // 401 is handled globally (redirect to login). 403/404 here mean "this
-  // order exists but isn't yours" or "no such order" — distinct, useful states.
+  // order exists but isn't yours" or "no such order", distinct, useful states.
   const [notFound, setNotFound] = useState(false);
   const [forbidden, setForbidden] = useState(false);
 
@@ -46,7 +46,24 @@ export function OrderDetailPage() {
 
   return (
     <div className="order-detail">
-      {justPlaced && <p className="confirmation-banner">Order placed successfully.</p>}
+      {justPlaced && (
+        <div className="confirmation-banner" role="status">
+          <p className="confirmation-banner__title">Order placed successfully.</p>
+          <p>
+            Order <strong>{order.id.slice(0, 8)}</strong> was placed on{' '}
+            {new Date(order.createdAt).toLocaleString()} for a total of{' '}
+            <strong>R{order.totalAmount.toFixed(2)}</strong>.
+          </p>
+          <div className="confirmation-banner__actions">
+            <Link to="/orders" className="button button--ghost">
+              View order history
+            </Link>
+            <Link to="/products" className="button button--primary">
+              Continue shopping
+            </Link>
+          </div>
+        </div>
+      )}
       <h1>Order {order.id.slice(0, 8)}</h1>
       <dl className="order-meta">
         <div>

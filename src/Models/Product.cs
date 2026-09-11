@@ -11,16 +11,11 @@ public class Product
     public int StockQuantity { get; set; }
     public Guid? CategoryId { get; set; }
 
-    // Soft delete flag (Milestone 2 §6). Deactivating a product NEVER
-    // physically removes the row — order history via OrderItem.ProductId
-    // (Restrict delete behavior, see AppDbContext configuration) depends
-    // on the row continuing to exist.
     public bool IsDeleted { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-    // Concurrency token: protects against two simultaneous requests
-    // (e.g. two orders) both decrementing stock based on stale reads.
+    // Concurrency token: protects against two simultaneous requests both decrementing stock based on stale reads.
     [Timestamp]
     public byte[] RowVersion { get; set; } = default!;
 

@@ -4,7 +4,7 @@ import { Role } from '../types/auth';
 
 /*
  Role-based authorization. MUST run after `authenticate`
- in the middleware chain. Distinguishes "not authenticated at all" (401 —
+ in the middleware chain. Distinguishes "not authenticated at all" (401,
  a misconfiguration if this fires, since authenticate should always run
  first) from "authenticated but the wrong role" (403).
  */

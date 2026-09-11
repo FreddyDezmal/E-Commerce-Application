@@ -8,9 +8,9 @@ namespace ECommerceApi.Services.Implementations;
 
 public class OrderService : IOrderService
 {
-    
+
     // Allowed order status transitions
-    
+
     private static readonly Dictionary<OrderStatus, OrderStatus[]> AllowedTransitions = new()
     {
         [OrderStatus.Pending] = new[] { OrderStatus.Paid, OrderStatus.Cancelled },
@@ -30,13 +30,6 @@ public class OrderService : IOrderService
         _cartRepository = cartRepository;
         _productRepository = productRepository;
     }
-
-    /// <summary>
-    /// Checkout: cart -> order. Re-validates cart contents and CURRENT
-    /// stock/price before delegating the atomic write to the repository's
-    /// transaction (Milestone 2 §23/§25). Never trusts a client-supplied
-    /// price — totals are always derived from Product.Price read here.
-    /// </summary>
     public async Task<OrderResponse> CheckoutAsync(Guid userId, Guid? shippingAddressId)
     {
         var cart = await _cartRepository.FindOrCreateByUserAsync(userId);
