@@ -25,6 +25,13 @@ interface RenderOptions {
    * navigated somewhere without stubbing out the router.
    */
   otherRoutes?: ReactNode;
+  /**
+   * Mounts the component behind a real route guard, the way App.tsx nests
+   * protected pages under <ProtectedRoute /> or <AdminRoute />. Pages that read
+   * auth state during their first render rely on the guard having resolved the
+   * session already, so testing them without it misrepresents how they mount.
+   */
+  guard?: ReactNode;
 }
 
 /**
@@ -37,7 +44,7 @@ interface RenderOptions {
  * whenever CartProvider will fetch).
  */
 export function renderWithProviders(ui: ReactNode, options: RenderOptions = {}) {
-  const { route = '/', path = route, state, otherRoutes } = options;
+  const { route = '/', path = route, state, otherRoutes, guard } = options;
 
   return render(
     <MemoryRouter initialEntries={[{ pathname: route, state }]}>
@@ -45,7 +52,13 @@ export function renderWithProviders(ui: ReactNode, options: RenderOptions = {}) 
         <CartProvider>
           <ToastProvider>
             <Routes>
-              <Route path={path} element={ui} />
+              {guard ? (
+                <Route element={guard}>
+                  <Route path={path} element={ui} />
+                </Route>
+              ) : (
+                <Route path={path} element={ui} />
+              )}
               {otherRoutes}
             </Routes>
           </ToastProvider>
