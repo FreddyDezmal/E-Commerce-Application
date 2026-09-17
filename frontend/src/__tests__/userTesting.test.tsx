@@ -46,7 +46,7 @@ const PRODUCT = {
   price: 899.99,
   stockQuantity: 5,
   categoryId: 'c1',
-  isActive: true,
+  isActive: false,
   createdAt: '',
 };
 
