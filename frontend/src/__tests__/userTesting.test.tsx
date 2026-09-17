@@ -1,11 +1,11 @@
 /*
- * User Testing (Milestone 5 — Testing and Quality Assurance rubric).
+ * User Testing (Milestone 5, Testing and Quality Assurance rubric).
  *
  * Simulates a complete real user session end-to-end via real navigation
  * and real UI interactions, as distinct from the isolated Unit/Component/
  * Function tests elsewhere in this suite (which each render a single
  * page/component/function on its own). This test renders the actual
- * <App /> with real routing and never jumps directly to a page — every
+ * <App /> with real routing and never jumps directly to a page, every
  * step happens by clicking something a real user would click.
  *
  * Journey covered, in one continuous flow:
@@ -47,6 +47,7 @@ const PRODUCT = {
   stockQuantity: 5,
   categoryId: 'c1',
   isActive: false,
+  isDeleted: false,
   createdAt: '',
 };
 
