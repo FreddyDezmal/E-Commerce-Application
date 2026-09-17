@@ -14,12 +14,6 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ── Configuration ───────────────────────────────────────────
-// Connection string, JWT key, and CORS origins all come from
-// configuration/environment variables, never hard-coded
-// (Milestone 2 §10). In production, override via environment variables:
-//   ConnectionStrings__DefaultConnection, Jwt__Key, Jwt__Issuer,
-//   Jwt__Audience, Jwt__ExpiryMinutes, Cors__AllowedOrigins__0
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -87,9 +81,8 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
-// ── CORS (Milestone 2 §28, never AllowAnyOrigin in production) ────
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
-    ?? new[] { "http://localhost:3000" };
+    ?? new[] { "http://localhost:3001" };
 
 builder.Services.AddCors(options =>
 {
@@ -102,7 +95,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-// ── Rate limiting (Milestone 2 §17/§34, brute-force mitigation on auth) ─
 builder.Services.AddRateLimiter(options =>
 {
     options.AddFixedWindowLimiter("auth", opt =>
@@ -121,8 +113,6 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo { Title = "SEN371 E-Commerce API", Version = "v1" });
 
-    // JWT auth in Swagger UI (Milestone 2 §29) so protected endpoints can
-    // be exercised directly from /swagger during development.
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -155,7 +145,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// The Development launch profile serves HTTP only, so there is no HTTPS port
+// to redirect to and the middleware logs "Failed to determine the https port
+// for redirect" at startup. Redirect only where an HTTPS endpoint exists.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseCors("Frontend");
 app.UseRateLimiter();
 app.UseAuthentication();
@@ -165,7 +161,4 @@ app.MapControllers();
 app.MapHealthChecks("/health");
 
 app.Run();
-
-// Exposed for WebApplicationFactory<Program> in integration tests
-// (Milestone 2 §33).
 public partial class Program { }
