@@ -4,12 +4,35 @@
 **Branch:** `test/milestone5-component-testing`
 **Date measured:** 17 September 2026
 **Companion document:** `Milestone5-ComponentTesting.md` (strategy, components tested, TDD provenance)
+---
+
+## Executive Summary
+
+This milestone implements and evaluates frontend React component testing for the E-Commerce Application.
+
+The component-testing scope consists of **25 test files containing 254 tests** covering pages, reusable components, and React contexts.
+
+The complete repository test suite contains:
+
+- **32 test files**
+- **283 tests**
+- **283 passed**
+- **0 failed**
+- **0 skipped**
+
+The component-testing scope achieved:
+
+text
+Statements: 96.83%
+Branches:   92.57%
+Functions:  95.92%
+Lines:      98.16%
 
 Every figure in this document was produced by running the commands shown. Nothing
 is estimated. Where a number could be misread, the section says what it does and
 does not mean.
 
----
+
 
 ## 1. Test Reporting
 
@@ -164,13 +187,13 @@ pre-existing API-layer tests (which exercise `src/api/*` against a stubbed
 **The number that actually describes this milestone's work** is the component
 surface under Run A:
 
-```text
+text
 src/components + src/context + src/pages   (component tests only)
   Statements  96.83%   (537 statements)
   Branches    92.57%   (269 branches)
   Functions   95.92%   (147 functions)
   Lines       98.16%   (490 lines)
-```
+
 
 ### 2.3 Per-file coverage
 
@@ -303,22 +326,22 @@ Stated explicitly, because coverage is routinely over-read:
 
 ## 3. Reproducing These Results
 
-```bash
+
 cd frontend
 npm ci
 npm run test:coverage
-```
+
 
 This prints the text summary, writes `coverage/index.html` for the browsable
 per-line report, and writes `coverage/coverage-summary.json` for the raw figures.
 Run A is reproduced with:
 
-```bash
+
 npx vitest run --coverage \
   --exclude 'src/api/__tests__/**' \
   --exclude 'src/__tests__/**' \
   --exclude 'node_modules/**'
-```
+
 
 That should report `25 passed (25)` files and `254 passed (254)` tests. Omitting
 either `--exclude` changes the figures, because the API-layer tests cover
