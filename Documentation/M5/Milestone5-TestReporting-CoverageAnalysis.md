@@ -339,7 +339,7 @@ The `coverage/` directory is gitignored and is regenerated on each run.
 
 No production component, context, API-client, routing or styling file was
 modified. The test suite itself is unchanged, coverage was measured against
-exactly the tests reported in §1.
+exactly the tests reported in section 1.
 
 **Setup note:** if `npm run test:coverage` reports a missing coverage provider,
 run `npm install` once to install `@vitest/coverage-v8` from `package.json`.
