@@ -174,7 +174,7 @@ public class OrderServiceTests
         var service = CreateService();
         var result = await service.UpdateStatusAsync(order.Id, to);
 
-        result.Status.Should().Be(to.ToString().ToLowerInvariant());
+        result.Status.Should().Be(to.ToString());
     }
 
     [Theory]

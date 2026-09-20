@@ -216,7 +216,7 @@ public class ShoppingJourneyTests : FunctionalTestBase
         checkout.StatusCode.Should().Be(HttpStatusCode.Created);
         var order = await checkout.Content.ReadFromJsonAsync<OrderResponse>();
 
-        order!.Status.Should().Be("pending", "a new order starts in the Pending state");
+        order!.Status.Should().Be("Pending", "a new order starts in the Pending state");
         order.TotalAmount.Should().Be(1947.50m, "(2 x 899.00) + (1 x 149.50) = 1947.50");
         order.Items.Should().HaveCount(2);
         order.Items.Should().Contain(i => i.ProductId == headphones.Id && i.Quantity == 2
@@ -305,7 +305,7 @@ public class ShoppingJourneyTests : FunctionalTestBase
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var updated = await response.Content.ReadFromJsonAsync<OrderResponse>();
-        updated!.Status.Should().Be("paid");
+        updated!.Status.Should().Be("Paid");
     }
 
     [Fact(DisplayName = "FT-15 (negative): An illegal status transition is rejected")]

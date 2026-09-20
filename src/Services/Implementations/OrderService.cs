@@ -118,7 +118,12 @@ public class OrderService : IOrderService
         {
             Id = order.Id,
             UserId = order.UserId,
-            Status = order.Status.ToString().ToLowerInvariant(),
+            // Emitted in the enum's own casing ("Pending", "Shipped", ...). The
+            // frontend's OrderStatus union, the admin status <select> options and
+            // the dashboard's ?status=Pending filter are all capitalised, so
+            // lowercasing here made every non-Pending order render as "Pending"
+            // in the admin control. Inbound parsing stays case-insensitive.
+            Status = order.Status.ToString(),
             TotalAmount = order.TotalAmount,
             ShippingAddressId = order.ShippingAddressId,
             CreatedAt = order.CreatedAt,

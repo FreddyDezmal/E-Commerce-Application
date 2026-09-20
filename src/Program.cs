@@ -1,4 +1,5 @@
 using System.Text;
+using System.Threading.RateLimiting;
 using ECommerceApi.Authentication;
 using ECommerceApi.Data;
 using ECommerceApi.Middleware;
@@ -95,14 +96,29 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Limits are per client IP, not global. AddFixedWindowLimiter("auth", ...)
+// creates ONE bucket shared by every caller, so 20 requests per 15 minutes was
+// the ceiling for the entire deployment: the 21st sign-in from anyone, anywhere,
+// got rejected. Milestone 1 SS12 specifies per-IP brute-force mitigation.
+// Limits come from configuration so a deployment (or the test host) can tune them.
+var authPermitLimit = builder.Configuration.GetValue<int?>("RateLimiting:AuthPermitLimit") ?? 20;
+var authWindowMinutes = builder.Configuration.GetValue<int?>("RateLimiting:AuthWindowMinutes") ?? 15;
+
 builder.Services.AddRateLimiter(options =>
 {
-    options.AddFixedWindowLimiter("auth", opt =>
-    {
-        opt.PermitLimit = 20;
-        opt.Window = TimeSpan.FromMinutes(15);
-        opt.QueueLimit = 0;
-    });
+    // 429 is the correct semantic for a throttled caller; the default is 503,
+    // which reads as "the server is down" to clients and monitoring alike.
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddPolicy("auth", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = authPermitLimit,
+                Window = TimeSpan.FromMinutes(authWindowMinutes),
+                QueueLimit = 0
+            }));
 });
 
 // ── Controllers, validation, Swagger ─────────────────────────

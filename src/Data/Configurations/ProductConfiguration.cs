@@ -16,6 +16,16 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 
         builder.HasKey(p => p.Id);
 
+        /* Optimistic concurrency on stock decrements.
+           Previously this was a [Timestamp] byte[] RowVersion, which is the
+           SQL Server pattern. PostgreSQL has no mechanism to populate a bytea
+           rowversion, so that column stayed empty on every UPDATE and the
+           concurrency check compared '' to '' forever, i.e. it never
+           protected anything. xmin is PostgreSQL's own per-row transaction
+           id and does change on every UPDATE, which is what Npgsql documents
+           for this purpose. */
+        builder.UseXminAsConcurrencyToken();
+
         builder.Property(p => p.Name)
             .IsRequired()
             .HasMaxLength(255);
