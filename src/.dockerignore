@@ -1,0 +1,8 @@
+bin/
+obj/
+# Local secrets must never be baked into an image.
+appsettings.Development.json
+appsettings.Production.json
+appsettings.Local.json
+Properties/launchSettings.json
+*.user

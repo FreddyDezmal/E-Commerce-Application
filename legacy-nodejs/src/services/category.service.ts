@@ -1,6 +1,10 @@
 import { ICategoryRepository } from '../repositories/interfaces';
 import { CategoryRecord } from '../types/domain';
-import { ConflictError, NotFoundError, ValidationError } from '../errors/AppError';
+import {
+  ConflictError,
+  NotFoundError,
+  ValidationError,
+} from '../errors/AppError';
 import { createCategorySchema } from '../validators/product.validators';
 
 export class CategoryService {
@@ -13,7 +17,10 @@ export class CategoryService {
   async createCategory(input: { name: string }): Promise<CategoryRecord> {
     const parsed = createCategorySchema.safeParse(input);
     if (!parsed.success) {
-      throw new ValidationError('Invalid category data', parsed.error.flatten());
+      throw new ValidationError(
+        'Invalid category data',
+        parsed.error.flatten(),
+      );
     }
 
     const existing = await this.categoryRepository.findByName(parsed.data.name);
@@ -26,7 +33,7 @@ export class CategoryService {
 
   /**
    * Category deletion is blocked if any active product still references it
-   * (Milestone 1 §11, "Category deletion blocked if products reference it").
+   * (Milestone 1 section 11, "Category deletion blocked if products reference it").
    */
   async deleteCategory(id: string): Promise<void> {
     const category = await this.categoryRepository.findById(id);
@@ -36,7 +43,9 @@ export class CategoryService {
 
     const hasProducts = await this.categoryRepository.hasProducts(id);
     if (hasProducts) {
-      throw new ConflictError('Cannot delete a category that still has active products');
+      throw new ConflictError(
+        'Cannot delete a category that still has active products',
+      );
     }
 
     await this.categoryRepository.delete(id);

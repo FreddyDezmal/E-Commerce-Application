@@ -147,7 +147,7 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// ── Health checks (Milestone 2 §30, includes DB connectivity) ─────
+// ── Health checks (Milestone 2 section 30, includes DB connectivity) ─────
 builder.Services.AddHealthChecks()
     .AddNpgSql(connectionString, name: "postgresql");
 

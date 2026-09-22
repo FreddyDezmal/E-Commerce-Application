@@ -24,7 +24,7 @@ The original SEN371 brief explicitly listed **ASP.NET** as one of the permitted 
 
 ### 1.4 Why PostgreSQL Remains Unchanged
 
-PostgreSQL was selected in Milestone 1 §10/ADR-003 for its relational integrity guarantees (foreign keys, CHECK constraints, transactions for atomic checkout), none of that reasoning is backend-language-specific. Entity Framework Core has first-class PostgreSQL support via the `Npgsql.EntityFrameworkCore.PostgreSQL` provider, so the database engine, schema, and integrity guarantees carry over unchanged; only the ORM issuing the queries changes (Prisma - EF Core).
+PostgreSQL was selected in Milestone 1 section 10/ADR-003 for its relational integrity guarantees (foreign keys, CHECK constraints, transactions for atomic checkout), none of that reasoning is backend-language-specific. Entity Framework Core has first-class PostgreSQL support via the `Npgsql.EntityFrameworkCore.PostgreSQL` provider, so the database engine, schema, and integrity guarantees carry over unchanged; only the ORM issuing the queries changes (Prisma - EF Core).
 
 ### 1.5 Why React + TypeScript Remains Unchanged
 
@@ -36,7 +36,7 @@ Milestone 1's core architectural decision (ADR-005) was **MVC extended with an e
 
 ### 1.7 Why the Technology Change Does Not Alter System Requirements
 
-Every functional requirement (T-01 through T-22), every non-functional requirement, and every database entity/relationship/constraint in Milestone 1 §3, §4, and §10 is defined in terms of _behavior_ and none of them reference Node.js, Express, or Prisma by name as a requirement in itself. The technology stack was always an _implementation decision_ made to satisfy those requirements, not a requirement itself. Swapping the backend implementation technology therefore does not require re-deriving or re-justifying a single functional or non-functional requirement
+Every functional requirement (T-01 through T-22), every non-functional requirement, and every database entity/relationship/constraint in Milestone 1 section 3, section 4, and section 10 is defined in terms of _behavior_ and none of them reference Node.js, Express, or Prisma by name as a requirement in itself. The technology stack was always an _implementation decision_ made to satisfy those requirements, not a requirement itself. Swapping the backend implementation technology therefore does not require re-deriving or re-justifying a single functional or non-functional requirement
 
 ### 1.8 Consequences for Testing, Deployment, Authentication, Validation, and Tooling
 
@@ -105,7 +105,7 @@ None of these are functional regressions, each ASP.NET Core equivalent satisfies
                 └───────────────────┘
 ```
 
-This is a direct re-expression of the Milestone 1 §7 diagram with Express/Prisma replaced by ASP.NET Core/EF Core, the layer count, layer order, and layer purpose are unchanged.
+This is a direct re-expression of the Milestone 1 section 7 diagram with Express/Prisma replaced by ASP.NET Core/EF Core, the layer count, layer order, and layer purpose are unchanged.
 
 ### 2.2 Layer Responsibilities
 
@@ -119,7 +119,7 @@ This is a direct re-expression of the Milestone 1 §7 diagram with Express/Prism
 
 **Entity Framework Core.** Owns the object-relational mapping: entity class definitions, the `AppDbContext` (the direct analogue of the Prisma-generated client), relationship configuration (via Fluent API in `OnModelCreating`), migrations (the analogue of Prisma's `migrations/` folder), and query translation to PostgreSQL SQL. EF Core additionally owns transaction management for the atomic checkout operation (`DbContext.Database.BeginTransactionAsync()` or `SaveChangesAsync` with a single unit-of-work, analogous to Prisma's `$transaction`).
 
-**PostgreSQL.** Unchanged, remains the system of record, enforcing the same foreign keys, CHECK constraints, and referential integrity rules established in Milestone 1 §10.
+**PostgreSQL.** Unchanged, remains the system of record, enforcing the same foreign keys, CHECK constraints, and referential integrity rules established in Milestone 1 section 10.
 
 ### 2.3 Updated Technology Stack
 
@@ -149,9 +149,9 @@ This is a direct re-expression of the Milestone 1 §7 diagram with Express/Prism
 
 **Registration flow:** DTO-bound request (`RegisterRequestDto`) - Data Annotation/FluentValidation validation - `AuthService.RegisterAsync` checks email uniqueness via `IUserRepository` - password hashed with BCrypt.Net - user persisted - JWT issued - safe response DTO (`AuthResponseDto`, containing user info + token, **never** the password hash) returned with `201 Created`.
 
-**Login flow:** DTO-bound request - validation - `AuthService.LoginAsync` looks up by email - BCrypt compare - on success, JWT issued; on failure (unknown email **or** wrong password), an identical `401 Unauthorized` is returned in both cases, preserving the original Milestone 1 §13 no-enumeration requirement.
+**Login flow:** DTO-bound request - validation - `AuthService.LoginAsync` looks up by email - BCrypt compare - on success, JWT issued; on failure (unknown email **or** wrong password), an identical `401 Unauthorized` is returned in both cases, preserving the original Milestone 1 section 13 no-enumeration requirement.
 
-**JWT payload** (unchanged in shape from Milestone 1 §12/Milestone 2 §14):
+**JWT payload** (unchanged in shape from Milestone 1 section 12/Milestone 2 section 14):
 
 ```json
 { "sub": "<user-id>", "role": "customer", "iat": ..., "exp": ... }

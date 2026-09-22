@@ -1,0 +1,81 @@
+# SEN371 E-Commerce - Continuous Integration (Milestone 1 SS15.2, delivered in M6)
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend - build and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - run: dotnet restore ECommerceApi.sln
+      - run: dotnet build ECommerceApi.sln --no-restore -c Release
+      - run: dotnet test ECommerceApi.sln --no-build -c Release --logger "trx;LogFileName=results.trx"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-test-results
+          path: tests/**/TestResults/*.trx
+
+  migrations:
+    # The unit/integration suite uses EF InMemory, which never runs migrations.
+    # This job applies every migration to a real PostgreSQL 16, which is what
+    # would have caught the "xmin conflicts with a system column name" failure.
+    name: Migrations - apply to real PostgreSQL
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: sen371_ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      ConnectionStrings__DefaultConnection: Host=localhost;Port=5432;Database=sen371_ci;Username=postgres;Password=ci-only-password
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - run: dotnet tool install --global dotnet-ef --version 8.0.8
+      - run: dotnet ef database update --project src/ECommerceApi.csproj
+      - name: Verify schema
+        run: |
+          PGPASSWORD=ci-only-password psql -h localhost -U postgres -d sen371_ci -v ON_ERROR_STOP=1 -c \
+            "SELECT count(*) AS rowversion_columns FROM information_schema.columns WHERE table_name='products' AND column_name='RowVersion';" \
+            -c "SELECT \"MigrationId\" FROM \"__EFMigrationsHistory\" ORDER BY 1;"
+
+  frontend:
+    name: Frontend - lint, test, build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+        env:
+          # Any value satisfies the build guard; the real one is set on Render.
+          VITE_API_BASE_URL: https://ci.invalid

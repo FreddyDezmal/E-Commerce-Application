@@ -4,6 +4,7 @@
 **Branch:** `test/milestone5-component-testing`
 **Date measured:** 17 September 2026
 **Companion document:** `Milestone5-ComponentTesting.md` (strategy, components tested, TDD provenance)
+
 ---
 
 ## Executive Summary
@@ -12,27 +13,27 @@ This milestone implements and evaluates frontend React component testing for the
 
 The component-testing scope consists of **25 test files containing 254 tests** covering pages, reusable components, and React contexts.
 
-The complete repository test suite contains:
+The complete frontend test suite contains:
 
-- **32 test files**
-- **283 tests**
-- **283 passed**
+- **33 test files**
+- **290 tests**
+- **290 passed**
 - **0 failed**
 - **0 skipped**
+
+The backend suite adds **90 tests, all passing** (see section 1.6), for **380 automated tests** in total.
 
 The component-testing scope achieved:
 
 text
 Statements: 96.83%
-Branches:   92.57%
-Functions:  95.92%
-Lines:      98.16%
+Branches: 92.57%
+Functions: 95.92%
+Lines: 98.16%
 
 Every figure in this document was produced by running the commands shown. Nothing
 is estimated. Where a number could be misread, the section says what it does and
 does not mean.
-
-
 
 ## 1. Test Reporting
 
@@ -132,6 +133,60 @@ repository's `vi.mock`-per-file convention and React Testing Library's DOM
 cleanup both assume isolation. `npm test` uses the isolated default, so this
 affects nothing in normal use.
 
+### 1.6 Backend test suite (added 20 September 2026)
+
+The backend suite is reported here alongside the frontend so that Milestone 5
+has a single place recording every automated test result.
+
+It could not be reported earlier: `tests/ECommerceApi.Tests` contained two files
+declaring the same class, so the project did not compile and none of its tests
+were runnable. That is documented in `Milestone5-ExitAudit-PreDeploymentGate.md`
+and resolved in `Milestone5-ExitAudit-FinalAddendum.md`.
+
+Executed on the team machine, .NET SDK 9.0.310, VSTest 17.14.1, target net8.0:
+
+```text
+Test command:      dotnet test ECommerceApi.sln
+Tests discovered:  90
+Tests executed:    90
+Tests passed:      90
+Tests failed:       0
+Tests skipped:      0
+Duration:          34 s
+```
+
+Composition:
+
+| Category                              | Location                                  | Test cases |
+| ------------------------------------- | ----------------------------------------- | ---------: |
+| Unit (services)                       | `tests/ECommerceApi.Tests/Unit/Services/` |         61 |
+| Integration (`WebApplicationFactory`) | `tests/ECommerceApi.Tests/Integration/`   |         11 |
+| Functional (journeys FT-01 … FT-16)   | `tests/ECommerceApi.Tests/functional/`    |         18 |
+| **Total**                             |                                           |     **90** |
+
+Counts are executed test _cases_, not declared methods: 82 methods are declared,
+and `[Theory]`/`[InlineData]` expands eight of them into multiple cases
+(`OrderServiceTests` state-machine theories +6, `ShoppingJourneyTests` FT-07
+non-positive quantities +2).
+
+**No backend coverage was measured.** No coverage collector was configured for
+the .NET projects, so no backend coverage percentage is claimed anywhere.
+
+**Two behaviours are deliberately not covered**, because the integration and
+functional tests run against the EF Core InMemory provider: checkout
+**atomicity** (InMemory ignores transactions) and **product search**
+(`EF.Functions.ILike` is PostgreSQL-only). `ShoppingJourneyTests` declares both
+as out of scope in its own header. Both require a smoke test against real
+PostgreSQL in Milestone 6.
+
+### 1.7 Combined Milestone 5 position
+
+| Suite     | Command                        |               Tests | Result                 |
+| --------- | ------------------------------ | ------------------: | ---------------------- |
+| Frontend  | `npm test`                     | 290 across 33 files | ✅ all passing         |
+| Backend   | `dotnet test ECommerceApi.sln` |                  90 | ✅ all passing         |
+| **Total** |                                |             **380** | ✅ 0 failed, 0 skipped |
+
 ---
 
 ## 2. Coverage Analysis
@@ -188,12 +243,11 @@ pre-existing API-layer tests (which exercise `src/api/*` against a stubbed
 surface under Run A:
 
 text
-src/components + src/context + src/pages   (component tests only)
-  Statements  96.83%   (537 statements)
-  Branches    92.57%   (269 branches)
-  Functions   95.92%   (147 functions)
-  Lines       98.16%   (490 lines)
-
+src/components + src/context + src/pages (component tests only)
+Statements 96.83% (537 statements)
+Branches 92.57% (269 branches)
+Functions 95.92% (147 functions)
+Lines 98.16% (490 lines)
 
 ### 2.3 Per-file coverage
 
@@ -247,12 +301,12 @@ region was inspected; none is an untested user-facing behaviour.
 
 **A. Defensive guards unreachable through the UI**, the largest group.
 
-| Location                                             | Line                                                                                   |
-| ---------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Location                                             | Line                                                                                  |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------- |
 | `ProductDetailPage.tsx:26`, `OrderDetailPage.tsx:24` | `if (!id) return;` the route always supplies `:id`                                    |
 | `CartPage.tsx:19`                                    | `if (quantity < 0) return;` the input has `min={0}`                                   |
 | `CheckoutPage.tsx:23`                                | `if (isPlacingOrder) return;` the button is disabled first, so re-entry never happens |
-| `ProductDetailPage.tsx:54`, `OrderDetailPage.tsx:45` | `error ?? '…not found'` fallback, the error branch is always reached with a message    |
+| `ProductDetailPage.tsx:54`, `OrderDetailPage.tsx:45` | `error ?? '…not found'` fallback, the error branch is always reached with a message   |
 | `ProfilePage.tsx:15`                                 | `if (!user) return null;` `ProtectedRoute` guarantees a user                          |
 
 These are correct defensive programming. Covering them would mean calling
@@ -326,22 +380,18 @@ Stated explicitly, because coverage is routinely over-read:
 
 ## 3. Reproducing These Results
 
-
 cd frontend
 npm ci
 npm run test:coverage
-
 
 This prints the text summary, writes `coverage/index.html` for the browsable
 per-line report, and writes `coverage/coverage-summary.json` for the raw figures.
 Run A is reproduced with:
 
-
 npx vitest run --coverage \
-  --exclude 'src/api/__tests__/**' \
-  --exclude 'src/__tests__/**' \
-  --exclude 'node_modules/**'
-
+ --exclude 'src/api/**tests**/**' \
+ --exclude 'src/**tests**/**' \
+ --exclude 'node_modules/\*\*'
 
 That should report `25 passed (25)` files and `254 passed (254)` tests. Omitting
 either `--exclude` changes the figures, because the API-layer tests cover
@@ -362,7 +412,7 @@ The `coverage/` directory is gitignored and is regenerated on each run.
 
 No production component, context, API-client, routing or styling file was
 modified. The test suite itself is unchanged, coverage was measured against
-exactly the tests reported in §1.
+exactly the tests reported in section 1.
 
 **Setup note:** if `npm run test:coverage` reports a missing coverage provider,
 run `npm install` once to install `@vitest/coverage-v8` from `package.json`.

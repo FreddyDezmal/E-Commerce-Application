@@ -7,7 +7,7 @@ using Xunit;
 namespace ECommerceApi.Tests.Unit.Services;
 
 // Unit tests for the JWT + password-hashing infrastructure itself
-// (Milestone 2 §32 "Authentication: Password verification, JWT
+// (Milestone 2 section 32 "Authentication: Password verification, JWT
 // generation"), mirroring the Node.js implementation's jwt.test.ts /
 // password.test.ts.
 public class AuthenticationInfrastructureTests

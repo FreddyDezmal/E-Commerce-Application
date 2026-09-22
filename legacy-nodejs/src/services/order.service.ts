@@ -1,10 +1,18 @@
-import { ICartRepository, IOrderRepository, IProductRepository } from '../repositories/interfaces';
+import {
+  ICartRepository,
+  IOrderRepository,
+  IProductRepository,
+} from '../repositories/interfaces';
 import { OrderRecord, OrderStatus } from '../types/domain';
 import { Role } from '../types/auth';
-import { ForbiddenError, NotFoundError, ValidationError } from '../errors/AppError';
+import {
+  ForbiddenError,
+  NotFoundError,
+  ValidationError,
+} from '../errors/AppError';
 
 /**
- * Allowed order status transitions (Milestone 1 §10 / Milestone 2 §26).
+ * Allowed order status transitions (Milestone 1 section 10 / Milestone 2 section 26).
  * A transition is valid only if `to` appears in `ALLOWED_TRANSITIONS[from]`.
  */
 const ALLOWED_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
@@ -12,24 +20,27 @@ const ALLOWED_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   paid: ['shipped', 'cancelled'],
   shipped: ['delivered'],
   delivered: [],
-  cancelled: []
+  cancelled: [],
 };
 
 export class OrderService {
   constructor(
     private readonly orderRepository: IOrderRepository,
     private readonly cartRepository: ICartRepository,
-    private readonly productRepository: IProductRepository
+    private readonly productRepository: IProductRepository,
   ) {}
 
   /**
    * Checkout: cart -> order. Re-validates cart contents and current stock
    * before delegating the actual atomic write (order + items + stock
    * decrement + cart clear) to the repository's transaction
-   * (Milestone 2 §25). This method contains the *business rules*; the
+   * (Milestone 2 section 25). This method contains the *business rules*; the
    * repository contains the *atomicity mechanism*.
    */
-  async checkout(userId: string, shippingAddressId: string | null): Promise<OrderRecord> {
+  async checkout(
+    userId: string,
+    shippingAddressId: string | null,
+  ): Promise<OrderRecord> {
     const cart = await this.cartRepository.findOrCreateByUser(userId);
 
     if (cart.items.length === 0) {
@@ -37,7 +48,11 @@ export class OrderService {
     }
 
     let totalAmount = 0;
-    const orderItems: Array<{ productId: string; quantity: number; unitPriceAtPurchase: number }> = [];
+    const orderItems: Array<{
+      productId: string;
+      quantity: number;
+      unitPriceAtPurchase: number;
+    }> = [];
 
     for (const cartItem of cart.items) {
       const product = await this.productRepository.findById(cartItem.productId);
@@ -46,14 +61,14 @@ export class OrderService {
       }
       if (cartItem.quantity > product.stockQuantity) {
         throw new ValidationError(
-          `"${product.name}" only has ${product.stockQuantity} unit(s) in stock`
+          `"${product.name}" only has ${product.stockQuantity} unit(s) in stock`,
         );
       }
       totalAmount += product.price * cartItem.quantity;
       orderItems.push({
         productId: product.id,
         quantity: cartItem.quantity,
-        unitPriceAtPurchase: product.price
+        unitPriceAtPurchase: product.price,
       });
     }
 
@@ -61,16 +76,20 @@ export class OrderService {
       userId,
       shippingAddressId,
       totalAmount: Math.round(totalAmount * 100) / 100,
-      items: orderItems
+      items: orderItems,
     });
   }
 
-  async getOrderForUser(orderId: string, requesterId: string, requesterRole: Role): Promise<OrderRecord> {
+  async getOrderForUser(
+    orderId: string,
+    requesterId: string,
+    requesterRole: Role,
+  ): Promise<OrderRecord> {
     const order = await this.orderRepository.findById(orderId);
     if (!order) {
       throw new NotFoundError('Order');
     }
-    // Ownership check (Milestone 1 §17): role alone is insufficient, a
+    // Ownership check (Milestone 1 section 17): role alone is insufficient, a
     // customer may only view their own order, regardless of authentication.
     if (requesterRole !== 'admin' && order.userId !== requesterId) {
       throw new ForbiddenError('You do not have access to this order');
@@ -86,7 +105,10 @@ export class OrderService {
     return this.orderRepository.findAll(page, limit, status);
   }
 
-  async updateStatus(orderId: string, nextStatus: OrderStatus): Promise<OrderRecord> {
+  async updateStatus(
+    orderId: string,
+    nextStatus: OrderStatus,
+  ): Promise<OrderRecord> {
     const order = await this.orderRepository.findById(orderId);
     if (!order) {
       throw new NotFoundError('Order');
@@ -94,7 +116,9 @@ export class OrderService {
 
     const allowed = ALLOWED_TRANSITIONS[order.status];
     if (!allowed.includes(nextStatus)) {
-      throw new ValidationError(`Cannot transition order from '${order.status}' to '${nextStatus}'`);
+      throw new ValidationError(
+        `Cannot transition order from '${order.status}' to '${nextStatus}'`,
+      );
     }
 
     return this.orderRepository.updateStatus(orderId, nextStatus);

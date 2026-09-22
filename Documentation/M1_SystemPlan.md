@@ -456,7 +456,7 @@ All endpoints prefixed `/api`. Auth = `none | user | admin`.
 | GET    | /users/me          | Current profile                                             | user       | ,                                               | 200 user                   | 401                                     |
 | PUT    | /users/me          | Update profile                                              | user       | `{fullName, ...}`                               | 200 user                   | 400, 401                                |
 
-REST conventions followed: nouns for resources, plural collection names, HTTP verbs carry the action, status codes are semantically correct (201 for creation, 204 for deletion with no body, 403 vs 401 distinguished, see §12).
+REST conventions followed: nouns for resources, plural collection names, HTTP verbs carry the action, status codes are semantically correct (201 for creation, 204 for deletion with no body, 403 vs 401 distinguished, see section 12).
 
 ## 12. JWT Security Design
 
@@ -472,7 +472,7 @@ REST conventions followed: nouns for resources, plural collection names, HTTP ve
 
 The payload **must not** contain the password hash, email (avoid unnecessary PII in a client-readable token), or any data that changes frequently (JWT can't be updated without reissue). Email/name are fetched via `/users/me` when needed, not decoded from the token.
 
-**Token expiration:** short-lived access token (e.g., 60 minutes). A refresh-token pattern is a **Should**, not a **Must**, given team scope, documented as a known trade-off (§9) rather than implemented without justification.
+**Token expiration:** short-lived access token (e.g., 60 minutes). A refresh-token pattern is a **Should**, not a **Must**, given team scope, documented as a known trade-off (section 9) rather than implemented without justification.
 
 **Protected routes:** `authenticate` middleware verifies signature + expiry, attaches `req.user = {id, role}`. Missing/invalid token - 401.
 

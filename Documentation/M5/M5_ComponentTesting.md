@@ -1,10 +1,30 @@
 # SEN371 Milestone 5, Component Testing Report
 
+> **STATUS UPDATE — 20 September 2026.** The figures in this report describe the
+> component-testing phase **as it was delivered** (282 tests across 31 files, no
+> coverage measured at that time). Both have since moved on:
+>
+> |                | This report         | Current repository                                |
+> | -------------- | ------------------- | ------------------------------------------------- |
+> | Frontend tests | 282 across 31 files | **290 across 33 files**                           |
+> | Coverage       | not measured        | **measured** — 94.56% statements, 88.68% branches |
+> | Backend tests  | out of scope here   | **90 / 90 passing**                               |
+>
+> The added tests are a user-journey test (`userTesting.test.tsx`) and seven
+> `AdminOrdersPage` contract regression tests. Current figures and methodology
+> live in `Milestone5-TestReporting-CoverageAnalysis.md`; the backend result and
+> the defects it uncovered are in `Milestone5-ExitAudit-FinalAddendum.md`.
+>
+> The historical numbers below are left as written, because they are the honest
+> record of what that phase produced.
+
+---
+
 **Scope:** Frontend React component testing only.  
 **Branch:** `test/milestone5-component-testing`  
 **Date of test execution:** 16 September 2026
 
-This report covers the Component Testing portion of Milestone 5 only. Backend unit/service/repository testing, integration testing, database testing, API endpoint testing, UAT, performance and security testing are out of scope and were not attempted. Issues found outside component scope are recorded in §9 Remaining Issues rather than fixed.
+This report covers the Component Testing portion of Milestone 5 only. Backend unit/service/repository testing, integration testing, database testing, API endpoint testing, UAT, performance and security testing are out of scope and were not attempted. Issues found outside component scope are recorded in section 9 Remaining Issues rather than fixed.
 
 ---
 
@@ -14,17 +34,17 @@ This report covers the Component Testing portion of Milestone 5 only. Backend un
 
 The frontend already had a complete component-testing stack. **No new testing framework was introduced and no new testing dependency was added.**
 
-| **Concern** | **Existing state** |
-| --- | --- |
-| Framework | React 19.2 + TypeScript 6.0 + Vite 8.2 |
-| Test runner | Vitest 5.0, configured in `vite.config.ts` |
-| Component library | `@testing-library/react` 16.3 |
-| Interaction library | `@testing-library/user-event` 14.6 |
-| Matchers | `@testing-library/jest-dom` 7.0, loaded in `src/test/setup.ts` |
-| DOM environment | `jsdom` 30 |
-| Linter | `oxlint` 1.79 with the react and typescript plugins |
-| Test script | `npm test` → `vitest run` |
-| Test layout | `__tests__/` folders beside the code under test |
+| **Concern**         | **Existing state**                                                                                                                              |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework           | React 19.2 + TypeScript 6.0 + Vite 8.2                                                                                                          |
+| Test runner         | Vitest 5.0, configured in `vite.config.ts`                                                                                                      |
+| Component library   | `@testing-library/react` 16.3                                                                                                                   |
+| Interaction library | `@testing-library/user-event` 14.6                                                                                                              |
+| Matchers            | `@testing-library/jest-dom` 7.0, loaded in `src/test/setup.ts`                                                                                  |
+| DOM environment     | `jsdom` 30                                                                                                                                      |
+| Linter              | `oxlint` 1.79 with the react and typescript plugins                                                                                             |
+| Test script         | `npm test` → `vitest run`                                                                                                                       |
+| Test layout         | `__tests__/` folders beside the code under test                                                                                                 |
 | Existing convention | `vi.mock('../../api/xApi')` module auto-mocking, `MemoryRouter`, a token in `localStorage` plus a mocked `userApi.getMe` to establish a session |
 
 Application architecture confirmed and preserved: React Router 7 routing (`App.tsx`), a layered API client (`src/api/client.ts` → per-resource modules), JWT held in `localStorage` under `ecommerce.auth.token`, and three React context providers (`AuthProvider` → `CartProvider` → `ToastProvider`).
@@ -54,33 +74,33 @@ Two test-only files, extracted only after the same setup had genuinely repeated:
 
 ## 2. Components Tested
 
-Components below are the actual components in the repository. Rows marked *(existing)* had some coverage before this phase; the Test Scenarios column describes what is covered **now**.
+Components below are the actual components in the repository. Rows marked _(existing)_ had some coverage before this phase; the Test Scenarios column describes what is covered **now**.
 
-| **Component** | **Behaviour tested** | **Test scenarios** |
-| --- | --- | --- |
-| `LoadingState` | Rendering, accessibility | Default label, custom label, `role="status"`, decorative spinner hidden |
-| `ErrorState` | Rendering, interaction, accessibility | `role="alert"`, retry present/absent, retry fires, keyboard operable |
-| `EmptyState` | Rendering | Title only, title + hint, not announced as an alert |
-| `Layout` *(existing)* | Auth-aware and role-aware navigation, mobile menu | Signed out / customer / admin navigation, cart badge quantity and singular-plural label, sign out returns to guest nav, `main` and `navigation` landmarks, brand link; menu toggle, Escape and focus return |
-| `ProtectedRoute` *(existing)* | Route guarding | Unauthenticated redirect, authenticated pass-through |
-| `AdminRoute` *(existing)* | Role guarding | Customer redirected away, admin allowed through |
-| `ToastContext` | Success/error announcement | Polite live region, success, error, stacking, self-dismissal, provider misuse |
-| `AuthContext` *(existing)* | Auth state | Login, register, failed login, logout, session restore from stored token |
-| `CartContext` *(existing)* | Cart state | No fetch when signed out, load when signed in, add item, load failure |
-| `HomePage` *(existing)* | Rendering | Intro and catalogue link, real categories, no categories section when empty |
-| `ProductListingPage` *(existing)* | Loading/error/empty, cards, search, filter, pagination | Loading → data, empty, error + retry; card link, stock and out-of-stock, result count singular/plural; search by button and Enter, pre-filled from URL, no-results; category list, filter applied, filter cleared, category failure tolerated; Previous/Next bounds, page label, pagination landmark, no controls when empty |
-| `ProductDetailPage` | Loading, error, product info, quantity, add to cart | Loading, load failure, network failure; name/description/price, missing description, in-stock and out-of-stock; initial quantity, max bound, select-and-replace, clamp on empty, disabled when out of stock; unauthenticated redirect to sign in, add with chosen quantity, success toast, in-flight disabling and duplicate-click guard, failure toast with retry, disabled when out of stock |
-| `CartPage` | Rendering, quantity, removal, empty, error, navigation | Loading, empty cart with no checkout action; load failure + retry + recovery; line rendering, line totals, server subtotal, per-item accessible names; quantity update request, updated subtotal, update failure; removal with refetch, confirmation, empty state after last removal, failed removal, per-row disabling; checkout navigation, continue shopping |
-| `CheckoutPage` *(existing)* | Loading, empty, summary, submission, error | Loading, empty cart with no place-order action; line items, server-calculated total, no premature error; places order, duplicate-submit guard, failure re-enables button |
-| `OrdersPage` | Loading, empty, error, listing | Loading, no table while loading; empty history; load failure + retry + recovery; rows with status and total, detail links, paged request, readable date, column headers |
-| `OrderDetailPage` | Rendering, distinct error states, confirmation | Loading; reference/status/total, items at purchase price, server total, column headers; 404 "couldn't find", 403 "no permission", no retry on 404, retry on transient failure and recovery; no banner from history, confirmation banner after checkout with next-step links |
-| `ProfilePage` | Rendering, validation, saving | Customer details, locked email/role, editable name, admin role, unreachable without a session; empty and whitespace name rejected; sends only `fullName`, success toast, saving state, rejection handling, no success on failure |
-| `NotFoundPage` | Rendering, routing | Message, link back to catalog |
-| `AdminLayout` | Routing, accessibility | Labelled admin nav, all four section links, nested section renders |
-| `AdminDashboardPage` *(existing)* | Rendering, error | Real counts from the API, error + retry |
-| `AdminProductsPage` | Loading, error, table, form, create, delete | Loading, failure + retry + recovery; price/stock per row, soft-deleted hidden, category options; name required, negative price and stock not submitted, zero price accepted; numeric coercion, category association, success toast + list refresh, form cleared, in-flight disabling, backend rejection keeps input |
-| `AdminCategoriesPage` | Loading, error, empty, create, delete | Loading, failure + retry + recovery; empty state with form still available; list, per-category accessible delete names, visually-hidden label; name required, whitespace rejected, create + confirm, list refresh, field cleared, in-flight disabling, duplicate rejection; delete + confirm, failed delete, empty state after last delete, per-row disabling |
-| `AdminOrdersPage` | Loading, empty, error, listing, status control | Loading; empty; failure + retry + recovery; references and totals, preselected status, status list matches the backend transition endpoint, no full-order editing offered, page size; status transition request, confirmation + reload, rejected transition keeps previous status, per-row disabling |
+| **Component**                     | **Behaviour tested**                                   | **Test scenarios**                                                                                                                                                                                                                                                                                                                                                                             |
+| --------------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `LoadingState`                    | Rendering, accessibility                               | Default label, custom label, `role="status"`, decorative spinner hidden                                                                                                                                                                                                                                                                                                                        |
+| `ErrorState`                      | Rendering, interaction, accessibility                  | `role="alert"`, retry present/absent, retry fires, keyboard operable                                                                                                                                                                                                                                                                                                                           |
+| `EmptyState`                      | Rendering                                              | Title only, title + hint, not announced as an alert                                                                                                                                                                                                                                                                                                                                            |
+| `Layout` _(existing)_             | Auth-aware and role-aware navigation, mobile menu      | Signed out / customer / admin navigation, cart badge quantity and singular-plural label, sign out returns to guest nav, `main` and `navigation` landmarks, brand link; menu toggle, Escape and focus return                                                                                                                                                                                    |
+| `ProtectedRoute` _(existing)_     | Route guarding                                         | Unauthenticated redirect, authenticated pass-through                                                                                                                                                                                                                                                                                                                                           |
+| `AdminRoute` _(existing)_         | Role guarding                                          | Customer redirected away, admin allowed through                                                                                                                                                                                                                                                                                                                                                |
+| `ToastContext`                    | Success/error announcement                             | Polite live region, success, error, stacking, self-dismissal, provider misuse                                                                                                                                                                                                                                                                                                                  |
+| `AuthContext` _(existing)_        | Auth state                                             | Login, register, failed login, logout, session restore from stored token                                                                                                                                                                                                                                                                                                                       |
+| `CartContext` _(existing)_        | Cart state                                             | No fetch when signed out, load when signed in, add item, load failure                                                                                                                                                                                                                                                                                                                          |
+| `HomePage` _(existing)_           | Rendering                                              | Intro and catalogue link, real categories, no categories section when empty                                                                                                                                                                                                                                                                                                                    |
+| `ProductListingPage` _(existing)_ | Loading/error/empty, cards, search, filter, pagination | Loading → data, empty, error + retry; card link, stock and out-of-stock, result count singular/plural; search by button and Enter, pre-filled from URL, no-results; category list, filter applied, filter cleared, category failure tolerated; Previous/Next bounds, page label, pagination landmark, no controls when empty                                                                   |
+| `ProductDetailPage`               | Loading, error, product info, quantity, add to cart    | Loading, load failure, network failure; name/description/price, missing description, in-stock and out-of-stock; initial quantity, max bound, select-and-replace, clamp on empty, disabled when out of stock; unauthenticated redirect to sign in, add with chosen quantity, success toast, in-flight disabling and duplicate-click guard, failure toast with retry, disabled when out of stock |
+| `CartPage`                        | Rendering, quantity, removal, empty, error, navigation | Loading, empty cart with no checkout action; load failure + retry + recovery; line rendering, line totals, server subtotal, per-item accessible names; quantity update request, updated subtotal, update failure; removal with refetch, confirmation, empty state after last removal, failed removal, per-row disabling; checkout navigation, continue shopping                                |
+| `CheckoutPage` _(existing)_       | Loading, empty, summary, submission, error             | Loading, empty cart with no place-order action; line items, server-calculated total, no premature error; places order, duplicate-submit guard, failure re-enables button                                                                                                                                                                                                                       |
+| `OrdersPage`                      | Loading, empty, error, listing                         | Loading, no table while loading; empty history; load failure + retry + recovery; rows with status and total, detail links, paged request, readable date, column headers                                                                                                                                                                                                                        |
+| `OrderDetailPage`                 | Rendering, distinct error states, confirmation         | Loading; reference/status/total, items at purchase price, server total, column headers; 404 "couldn't find", 403 "no permission", no retry on 404, retry on transient failure and recovery; no banner from history, confirmation banner after checkout with next-step links                                                                                                                    |
+| `ProfilePage`                     | Rendering, validation, saving                          | Customer details, locked email/role, editable name, admin role, unreachable without a session; empty and whitespace name rejected; sends only `fullName`, success toast, saving state, rejection handling, no success on failure                                                                                                                                                               |
+| `NotFoundPage`                    | Rendering, routing                                     | Message, link back to catalog                                                                                                                                                                                                                                                                                                                                                                  |
+| `AdminLayout`                     | Routing, accessibility                                 | Labelled admin nav, all four section links, nested section renders                                                                                                                                                                                                                                                                                                                             |
+| `AdminDashboardPage` _(existing)_ | Rendering, error                                       | Real counts from the API, error + retry                                                                                                                                                                                                                                                                                                                                                        |
+| `AdminProductsPage`               | Loading, error, table, form, create, delete            | Loading, failure + retry + recovery; price/stock per row, soft-deleted hidden, category options; name required, negative price and stock not submitted, zero price accepted; numeric coercion, category association, success toast + list refresh, form cleared, in-flight disabling, backend rejection keeps input                                                                            |
+| `AdminCategoriesPage`             | Loading, error, empty, create, delete                  | Loading, failure + retry + recovery; empty state with form still available; list, per-category accessible delete names, visually-hidden label; name required, whitespace rejected, create + confirm, list refresh, field cleared, in-flight disabling, duplicate rejection; delete + confirm, failed delete, empty state after last delete, per-row disabling                                  |
+| `AdminOrdersPage`                 | Loading, empty, error, listing, status control         | Loading; empty; failure + retry + recovery; references and totals, preselected status, status list matches the backend transition endpoint, no full-order editing offered, page size; status transition request, confirmation + reload, rejected transition keeps previous status, per-row disabling                                                                                           |
 
 ---
 
@@ -142,7 +162,7 @@ Supporting commands, all actually executed:
 
 ```text
 npx tsc -b        → exit 0 (type-check clean)
-npm run lint      → exit 0 (oxlint: 14 warnings, all pre-existing, see §9)
+npm run lint      → exit 0 (oxlint: 14 warnings, all pre-existing, see section 9)
 npm run build     → exit 0 (tsc -b && vite build, 57 modules, built in 199ms)
 npm test          → 31 files / 282 tests passed
 ```
@@ -154,7 +174,7 @@ Breakdown of the 282:
 
 Independence was verified, not assumed: the full suite was run with shuffled file and test order under two different seeds (`--sequence.shuffle --sequence.seed=12345`, `98765`, `4242`) and passed 282/282 each time. No test depends on execution order, a live backend, a live database, or another test's result. Each test establishes its own state and mocks are cleared in `afterEach`.
 
-**No coverage figures are claimed.** No coverage provider is installed, coverage was not measured, and adding one was outside this phase's scope.
+**No coverage figures are claimed in this report.** Coverage was not measured during this phase and adding a provider was outside its scope. _(Update: coverage has since been measured — see `Milestone5-TestReporting-CoverageAnalysis.md`.)_
 
 ---
 
@@ -192,7 +212,7 @@ Every failure encountered during this phase, its root cause, and its resolution.
 
 **Verified:** Passes.
 
-Noted in §9 as a test-authoring hazard.
+Noted in section 9 as a test-authoring hazard.
 
 ### 4. `ProductDetailPage` quantity, clearing and typing "3" produced 13
 
@@ -202,7 +222,7 @@ Noted in §9 as a test-authoring hazard.
 
 No production code was changed.
 
-**Reported in §9.**
+**Reported in section 9.**
 
 **Verified:** Both tests pass.
 
@@ -246,7 +266,7 @@ No production code was changed.
 
 No production code was changed.
 
-**Reported in §9.**
+**Reported in section 9.**
 
 **Verified:** Passes.
 
@@ -305,7 +325,7 @@ e0438a8 test(frontend): pin VITE_API_BASE_URL for the vitest environment
 - **No production architecture changes.** Routing, the API abstraction, state management, the authentication architecture, the design system and all component boundaries are untouched.
 - **Testing utility additions:** two test-only files (`renderWithProviders.tsx`, `fixtures.ts`).
 - **API mocking changes:** none to production code. Mocking uses the project's existing service-layer boundary and its existing `vi.mock` convention.
-- **Other targeted changes:** one Vitest configuration key, fixing the environment defect described in §1 and §5.
+- **Other targeted changes:** one Vitest configuration key, fixing the environment defect described in section 1 and section 5.
 
 No component required refactoring to become testable. Where a page was awkward to mount in isolation (`ProfilePage`), the fix was to mount it behind its real route guard rather than to change the page.
 
@@ -323,7 +343,7 @@ Specifically:
 - **New tests (227, in 17 files):** all written retrospectively against existing components during this phase. They are regression and characterisation tests, not test-first development.
 - **One genuine RED → GREEN cycle occurred**, and it concerns test infrastructure rather than a feature: the suite was observed failing (27 failures, RED), the root cause was diagnosed, the configuration fix was applied, and the suite was observed passing (55/55, GREEN). This is visible in the history as commit `e0438a8` and is reproducible by checking out the preceding commit and running `npm ci && npm test`.
 
-**No commits, timestamps, failing-test history, test results, coverage figures, CI results or developer actions have been fabricated.** No fake historical commits were created to make the history appear TDD-compliant. All numbers in §4 are copied from actual command output.
+**No commits, timestamps, failing-test history, test results, coverage figures, CI results or developer actions have been fabricated.** No fake historical commits were created to make the history appear TDD-compliant. All numbers in section 4 are copied from actual command output.
 
 ---
 
@@ -391,9 +411,9 @@ They fall under a different Milestone 5 category and were left untouched apart f
 
 There are 28 API-layer tests.
 
-#### 8. Coverage was not measured
+#### 8. Coverage was not measured _(resolved after this report)_
 
-No coverage provider is installed and adding one was out of scope, so no coverage percentage is claimed anywhere in this report.
+No coverage provider was installed at the time and adding one was out of scope, so no coverage percentage is claimed anywhere in this report. _(Update: `@vitest/coverage-v8` was added afterwards and coverage is reported in `Milestone5-TestReporting-CoverageAnalysis.md`.)_
 
 ### Explicit non-claims
 
@@ -454,13 +474,13 @@ Each run should pass the complete 282-test suite.
 
 The Milestone 5 Component Testing scope was completed without modifying production application functionality.
 
-The final component-testing suite contains **282 passing tests across 31 test files**, including **227 new component tests across 17 new test files** and **55 pre-existing tests** that were preserved.
+As delivered by this phase, the component-testing suite contained **282 passing tests across 31 test files**, including **227 new component tests across 17 new test files** and **55 pre-existing tests** that were preserved.
 
 The tests cover rendering, interaction, forms, validation, loading, errors, empty states, success paths, authentication, authorization, routing, accessibility behaviours and regression-sensitive application rules.
 
 The only production-adjacent change was a Vitest environment configuration value required to make the existing API-layer tests execute correctly from a clean checkout. Two reusable test-only utilities were added to reduce repeated setup.
 
-No coverage percentage is claimed because coverage measurement was outside the scope of this component-testing phase.
+No coverage percentage is claimed here because coverage measurement was outside the scope of this component-testing phase. _(Update: it was measured afterwards — see `Milestone5-TestReporting-CoverageAnalysis.md`.)_
 
 The remaining issues are documented rather than hidden, including the `ProductDetailPage` quantity-input quirk, unreachable validation branches in `AdminProductsPage`, the permanent toast live region, the missing development environment default, and the repository's pre-existing `--no-isolate` limitation.
 

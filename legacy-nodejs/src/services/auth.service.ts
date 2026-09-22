@@ -1,5 +1,9 @@
 import { IUserRepository } from '../repositories/interfaces';
-import { ConflictError, UnauthorizedError, ValidationError } from '../errors/AppError';
+import {
+  ConflictError,
+  UnauthorizedError,
+  ValidationError,
+} from '../errors/AppError';
 import { hashPassword, comparePassword } from '../utils/password';
 import { signToken } from '../utils/jwt';
 import { registerSchema, loginSchema } from '../validators/auth.validators';
@@ -24,9 +28,9 @@ export interface AuthResult {
 
 /**
  * Business logic for registration/login. Deliberately has no dependency on
- * Express request/response objects (Milestone 2 §4) and depends only on
+ * Express request/response objects (Milestone 2 section 4) and depends only on
  * the IUserRepository interface, not a concrete Prisma-backed class, so
- * it can be fully unit-tested with a mocked repository (Milestone 2 §23).
+ * it can be fully unit-tested with a mocked repository (Milestone 2 section 23).
  */
 export class AuthService {
   constructor(private readonly userRepository: IUserRepository) {}
@@ -34,7 +38,10 @@ export class AuthService {
   async register(input: RegisterDTO): Promise<AuthResult> {
     const parsed = registerSchema.safeParse(input);
     if (!parsed.success) {
-      throw new ValidationError('Invalid registration input', parsed.error.flatten());
+      throw new ValidationError(
+        'Invalid registration input',
+        parsed.error.flatten(),
+      );
     }
 
     const existing = await this.userRepository.findByEmail(parsed.data.email);
@@ -46,7 +53,7 @@ export class AuthService {
     const user = await this.userRepository.create({
       email: parsed.data.email,
       passwordHash,
-      fullName: parsed.data.fullName
+      fullName: parsed.data.fullName,
     });
 
     return this.buildResult(user);
@@ -60,12 +67,15 @@ export class AuthService {
 
     const user = await this.userRepository.findByEmail(parsed.data.email);
     // Deliberately identical error/message for "no such user" and "wrong
-    // password" (Milestone 2 §13), do not let a client enumerate emails.
+    // password" (Milestone 2 section 13), do not let a client enumerate emails.
     if (!user) {
       throw new UnauthorizedError('Invalid email or password');
     }
 
-    const passwordMatches = await comparePassword(parsed.data.password, user.passwordHash);
+    const passwordMatches = await comparePassword(
+      parsed.data.password,
+      user.passwordHash,
+    );
     if (!passwordMatches) {
       throw new UnauthorizedError('Invalid email or password');
     }
@@ -80,7 +90,7 @@ export class AuthService {
       email: user.email,
       fullName: user.fullName,
       role: user.role,
-      createdAt: user.createdAt
+      createdAt: user.createdAt,
     };
     return { user: safeUser, token };
   }

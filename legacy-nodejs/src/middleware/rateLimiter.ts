@@ -2,8 +2,8 @@ import rateLimit from 'express-rate-limit';
 import { isTest } from '../config/env';
 
 /**
- * Strict rate limit on login/register (Milestone 2 §19 / brute-force
- * mitigation, §20 Security Threats). Skipped entirely under NODE_ENV=test
+ * Strict rate limit on login/register (Milestone 2 section 19 / brute-force
+ * mitigation, section 20 Security Threats). Skipped entirely under NODE_ENV=test
  * so the automated test suite isn't itself rate-limited.
  */
 export const authRateLimiter = rateLimit({
@@ -12,14 +12,18 @@ export const authRateLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skip: () => isTest,
-  message: { error: { code: 'RATE_LIMITED', message: 'Too many attempts, please try again later' } }
+  message: {
+    error: {
+      code: 'RATE_LIMITED',
+      message: 'Too many attempts, please try again later',
+    },
+  },
 });
-
 
 export const globalRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 300,
   standardHeaders: true,
   legacyHeaders: false,
-  skip: () => isTest
+  skip: () => isTest,
 });

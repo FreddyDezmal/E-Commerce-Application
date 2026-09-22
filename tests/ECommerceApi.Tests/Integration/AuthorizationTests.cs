@@ -5,7 +5,7 @@ using Xunit;
 
 namespace ECommerceApi.Tests.Integration;
 
-// Security testing per Milestone 2 §34: unauthenticated/unauthorized
+// Security testing per Milestone 2 section 34: unauthenticated/unauthorized
 // access must be rejected server-side, not just hidden by the frontend.
 public class AuthorizationTests : IClassFixture<CustomWebApplicationFactory>
 {

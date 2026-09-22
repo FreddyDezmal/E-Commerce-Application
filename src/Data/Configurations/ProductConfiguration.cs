@@ -49,7 +49,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
             .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         // Global query filter: every normal query automatically excludes
-        // soft-deleted products (Milestone 2 §6, "normal product queries
+        // soft-deleted products (Milestone 2 section 6, "normal product queries
         // must exclude deleted products"). Admin-only "show deleted too"
         // queries use .IgnoreQueryFilters() explicitly at the call site,
         // making that an intentional, visible opt-in rather than the

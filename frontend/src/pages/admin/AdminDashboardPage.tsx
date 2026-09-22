@@ -17,7 +17,7 @@ interface DashboardCounts {
 }
 
 // All figures come straight from the real API's `total`/list results,
-// nothing here is estimated or fabricated (Milestone 4 §25).
+// nothing here is estimated or fabricated (Milestone 4 section 25).
 export function AdminDashboardPage() {
   const [counts, setCounts] = useState<DashboardCounts | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -48,7 +48,13 @@ export function AdminDashboardPage() {
   useEffect(load, []);
 
   if (isLoading) return <LoadingState label="Loading dashboard…" />;
-  if (error || !counts) return <ErrorState message={error ?? 'Unable to load dashboard.'} onRetry={load} />;
+  if (error || !counts)
+    return (
+      <ErrorState
+        message={error ?? 'Unable to load dashboard.'}
+        onRetry={load}
+      />
+    );
 
   return (
     <div className="admin-section">
@@ -96,7 +102,9 @@ export function AdminDashboardPage() {
                 </td>
                 <td>{new Date(order.createdAt).toLocaleDateString()}</td>
                 <td>
-                  <span className={`status-pill status-pill--${order.status.toLowerCase()}`}>
+                  <span
+                    className={`status-pill status-pill--${order.status.toLowerCase()}`}
+                  >
                     {order.status}
                   </span>
                 </td>
