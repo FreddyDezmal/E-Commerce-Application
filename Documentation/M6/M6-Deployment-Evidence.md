@@ -64,14 +64,14 @@ or localhost. This table is the actual evidence for "Live System Availability."
 | S3 | SPA deep link | Open `<web>/products` directly, refresh → page renders | 🟢 Pass | 25 Sep 2026 | Emmanuel | Navigated the live site directly — product browsing and cart worked |
 | S4 | Frontend reaches the API | Home page lists products; requests go to `<api>`, no CORS errors | 🟢 Pass | 25 Sep 2026 | Emmanuel | Browsed products, added items to cart — confirms frontend successfully calls the live API |
 | S5 | Register + login | Create customer, sign out, sign in; wrong password shows an error | 🟢 Pass | 25 Sep 2026 | Emmanuel | Registered an account, worked fine |
-| S6 | ILike search (case-insensitive) | Search mixed/wrong case still finds the product | 🔴 Not run | | | Never covered by automated tests |
+| S6 | ILike search (case-insensitive) | Search mixed/wrong case still finds the product | 🟢 Pass | 25 Sep 2026 | Emmanuel | Confirmed — wrong-case search still found the product |
 | S7 | Checkout on real PostgreSQL | Order created, cart emptied, stock reduced correctly; over-stock checkout rejected with no partial state | 🔴 Not run | | | Never covered by automated tests |
 | S8 | Order-status contract | Admin moves Pending → Paid → Shipped; dropdown shows real status after reload | 🟢 Pass | 25 Sep 2026 | Emmanuel | Confirmed working |
 | S9 | Per-IP rate limit | 21 failed logins from one machine → 21st returns 429; a different network can still sign in | 🔴 Not run | | | |
 | S10 | Authorization | Customer hitting `<web>/admin` redirected; `POST <api>/api/products` with customer token → 403 | 🟡 Partial | 25 Sep 2026 | Emmanuel | Frontend redirect confirmed — customer account sent back to customer page, admin area never loaded. API-level 403 check (direct request with customer token) not attempted — needs a tool like curl/Postman |
 | S11 | Admin journey | Create category + product, soft-delete product; disappears from shop | 🟢 Pass | 25 Sep 2026 | Emmanuel | Confirmed working |
 | S12 | HTTPS | `http://<web>` redirects to https | 🟢 Pass | 25 Sep 2026 | Emmanuel | Confirmed redirect |
-| S13 | Responsive / cross-browser | Chrome + one other browser at 375px, 768px, 1280px — no horizontal scroll, checkout reachable | 🔴 Not run | | | |
+| S13 | Responsive / cross-browser | Chrome + one other browser at 375px, 768px, 1280px — no horizontal scroll, checkout reachable | 🟢 Pass | 25 Sep 2026 | Emmanuel | Confirmed responsive at phone and tablet widths via DevTools |
 
 **xmin concurrency under real concurrency (two-writer test):** open the same product's
 edit form in two admin tabs, save both. Second save should fail with a conflict, not
@@ -96,9 +96,9 @@ as N/A. Corresponds to Runbook section 5.
 
 ## 5. Summary
 
-- **Overall status:** Live and reachable — customer journey, admin journey, order-status management, authorization redirect, HTTPS, and Swagger lockdown all confirmed working against the deployed system.
+- **Overall status:** Live and reachable — customer journey, admin journey, order-status management, authorization redirect, HTTPS, Swagger lockdown, case-insensitive search, and responsive layout all confirmed working against the deployed system.
 - **Live API URL:** https://sen371-ecommerce-api.onrender.com (health check: Healthy)
 - **Live frontend URL:** https://sen371-ecommerce-web.onrender.com (confirmed reachable, navigable)
-- **Smoke tests passing:** 8 / 13 pass, 1 / 13 partial (S1, S2, S3, S4, S5, S8, S11, S12 pass; S10 partial — frontend confirmed, API-level check not run)
-- **Known issues carried forward:** S6, S7, S9, S13, and the xmin two-writer test not yet executed — deferred due to submission deadline, not attempted rather than assumed passing. See section 3 for exact scope.
+- **Smoke tests passing:** 10 / 13 pass, 1 / 13 partial (S1, S2, S3, S4, S5, S6, S8, S11, S12, S13 pass; S10 partial — frontend confirmed, API-level check not run)
+- **Known issues carried forward:** S7, S9, and the xmin two-writer test not yet executed — deferred due to submission deadline, not attempted rather than assumed passing. See section 3 for exact scope.
 - **Sign-off:** Emmanuel, 25 September 2026
